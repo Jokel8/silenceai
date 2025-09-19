@@ -3,12 +3,15 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import tensorflow as tf
-from tensorflow.keras import models, layers
+from tensorflow.keras import models, layers, callbacks
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 
+WORK_DIR = "SilenceAI/training"
+os.chdir(WORK_DIR)
+
 # Parameter
-DATA_DIR = "silenceai\Training\data"
+DATA_DIR = "rawData/basicZweiVier"
 IMG_SIZE = (128, 128)  # wird nur für MediaPipe verarbeitet
 BATCH_SIZE = 32
 EPOCHS = 30
@@ -62,10 +65,21 @@ model = models.Sequential([
 
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
+LOG_DIR = "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, histogram_freq=1)
+
 # Training
-history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=EPOCHS, batch_size=BATCH_SIZE)
+history = model.fit(
+    X_train, y_train,
+    validation_data=(X_val, y_val),
+    epochs=EPOCHS,
+    batch_size=BATCH_SIZE,
+    callbacks=[tensorboard_cb]
+)
 
 # Modell speichern
-model.save("silenceai\Training\models\gesture_model.h5")
+model.save("models/gesture_model.h5")
 print("Training abgeschlossen. Modell gespeichert als mlp_gesture_model.h5")
 print("Klassen:", le.classes_)
