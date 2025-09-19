@@ -36,6 +36,7 @@ AI_W = 210
 AI_H = 300
 CROP_PADDING = 1.08
 CROP_MIN_FRAC = 0.42
+frame_idx = 0
 
 # ------------------- MediaPipe init -------------------
 mp_selfie = mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=1)
@@ -175,6 +176,7 @@ def main():
     ai_thread.start()
 
     try:
+        frame_idx = 0
         while True:
             ok, frame = cap.read()
             if not ok:
@@ -228,11 +230,14 @@ def main():
             crop_rgba, crop_coords = crop_and_resize_by_mask(bright_img, combined_255,
                                                              target_w=AI_W, target_h=AI_H,
                                                              padding=CROP_PADDING, min_frac=CROP_MIN_FRAC)
-            # push to AI queue (non-blocking)
-            try:
-                ai_q.put_nowait(crop_rgba.copy())
-            except queue.Full:
-                pass
+            # Push only every 10th frame
+            if (frame_idx % 10) == 0:
+                try:
+                    ai_q.put_nowait(crop_rgba.copy())
+                except queue.Full:
+                    pass
+
+            frame_idx += 1
 
             # user preview
             composite_preview = composite_on_checkerboard(bright_img, combined_255, tile=12)
