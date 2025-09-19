@@ -7,7 +7,10 @@ from pathlib import Path
 import time
 
 class HandKeypointsExtractor:
-    def __init__(self):
+    def __init__(self, input_directory, output_directory):
+        self.input_directory = Path(input_directory)
+        self.output_directory = Path(output_directory)
+        self.output_directory.mkdir(parents=True, exist_ok=True)
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(
             static_image_mode=True,
@@ -129,17 +132,13 @@ class HandKeypointsExtractor:
         
         return df
     
-    def process_all_subfolders(self, input_directory, output_directory):
-        input_directory = Path(input_directory)
-        output_directory = Path(output_directory)
-        output_directory.mkdir(parents=True, exist_ok=True)
-        
+    def extract(self):        
         # Alle Unterordner finden
-        subfolders = [d for d in input_directory.iterdir() 
+        subfolders = [d for d in self.input_directory.iterdir() 
                      if d.is_dir()]
         
         if not subfolders:
-            print(f"Keine Unterordner in {input_directory} gefunden")
+            print(f"Keine Unterordner in {self.input_directory} gefunden")
             return
         
         print(f"Gefundene Unterordner: {len(subfolders)}")
@@ -150,7 +149,7 @@ class HandKeypointsExtractor:
             if df is not None:
                 # CSV-Dateiname basierend auf Unterordnernamen
                 csv_filename = f"{subfolder.name}_hand_keypoints.csv"
-                csv_path = output_directory / csv_filename
+                csv_path = self.output_directory / csv_filename
                 
                 # DataFrame als CSV speichern
                 df.to_csv(csv_path, index=False)
@@ -163,8 +162,8 @@ if __name__ == "__main__":
     WORK_DIR = "SilenceAI/training"
     os.chdir(WORK_DIR)
     
-    try:
-        HandKeypointsExtractor().process_all_subfolders("rawData/basicZweiVier", "keypoints/basicZweiVier")
-        print("\nVerarbeitung abgeschlossen!")
-    except Exception as e:
-        print(f"Fehler: {e}")
+    input_dir = "rawData/basicZweiVier"
+    output_dir = "keypoints/basicZweiVier"
+
+    HandKeypointsExtractor(input_dir, output_dir).extract()
+    print("\nVerarbeitung abgeschlossen!")
