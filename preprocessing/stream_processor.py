@@ -23,7 +23,7 @@ from typing import Optional
 
 # ------------------- Defaults / Config -------------------
 DEFAULT_AI_W = 210
-DEFAULT_AI_H = 260   # requested size
+DEFAULT_AI_H = 300   # requested size
 DEFAULT_FPS = 25.0
 DEFAULT_OUT_DIR = "preprocessing/out"
 
