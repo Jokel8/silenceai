@@ -1,62 +1,54 @@
 import threading
 import time
-from textToSpeech import textToSpeech
+from userInterfaces import speechInterface, consoleInterface
 
-isRunning = True
-usePreProcessing = True
-usePostProcessing = True
-useTextToSpeech = True
-gotGeasture = False
+class State():
+    def __init__(self):
+        self.isRunning = True
+        self.usePreProcessing = True
+        self.usePostProcessing = True
+        self.useTextToSpeech = True
+        self.gotGeasture = False
 
-def textLoop():
-    global isRunning
-    
-    while isRunning:
-        user_input = input("Gebe jederzeit einen Command ein: ")
-        if user_input.lower() in ["exit", "quit", "beenden"]:
-            isRunning = False
-        else:
-            print(f"Fehler: '{user_input}'")
-
-def captureLoop():
-    global isRunning
-    
-    while isRunning:
-        analyseThread = threading.Thread(target=analysis)
+def captureLoop(state):    
+    consoleInterface.print_status("Starte Verarbeitung...")
+    while state.isRunning:
+        analyseThread = threading.Thread(target=analysis(state))
         analyseThread.start()
         time.sleep(3)
         
-def analysis():
-    global isRunning, usePostProcessing, useTextToSpeech, gotGeasture
-    
-    if gotGeasture: return
-    gotGeasture = True
-    print("Verarbeite Videosignal...")
+def analysis(state):    
+    if state.gotGeasture: return
+    state.gotGeasture = True
+    consoleInterface.print_status("Verarbeite Videosignal...")
+    time.sleep(1)
     
     #KI Analyse
     text = "Test"
     #text, confidence = analyzeVideo()
     
-    if not isRunning: return
+    if not state.isRunning: return
     
-    if usePostProcessing:
-        print("Postprocessing wird angewendet...")
+    if state.usePostProcessing:
+        consoleInterface.print_status("Postprocessing wird angewendet...")
         #text = postProcessing(text)
 
-    if not isRunning: return
+    if not state.isRunning: return
     
-    if useTextToSpeech:
-        textToSpeech.say(text)
+    if state.useTextToSpeech:
+        speechInterface.say(text)
     
-    gotGeasture = False
-        
-textThread = threading.Thread(target=textLoop)
-textThread.start()
+    state.gotGeasture = False
 
-captureThread = threading.Thread(target=captureLoop)
+state = State()
+  
+consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
+consoleThread.start()
+
+captureThread = threading.Thread(target=captureLoop, args=(state,))
 captureThread.start()
 
 # Warten, bis der Nebenthread beendet ist
-textThread.join()
-textThread.join()
-print("SilenceAI wurde beendet")
+consoleThread.join()
+consoleInterface.print_instruction("SilenceAI wurde beendet")
+exit(0)

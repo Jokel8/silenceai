@@ -1,5 +1,6 @@
 import pyttsx3
 import sys
+import consoleInterface
 
 
 def say(text):
@@ -13,6 +14,7 @@ def say(text):
         engine.runAndWait()
     except Exception as e:
         print(f"Fehler bei der Sprachausgabe: {e}")
+        consoleInterface.print_error("Postprocessing wird angewendet...")
 
 
 if __name__ == "__main__":
