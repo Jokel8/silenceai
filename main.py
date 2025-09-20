@@ -8,18 +8,18 @@ class State():
         self.usePreProcessing = True
         self.usePostProcessing = True
         self.useTextToSpeech = True
-        self.gotGeasture = False
+        self.gotGesture = False
 
 def captureLoop(state):    
     consoleInterface.print_status("Starte Verarbeitung...")
     while state.isRunning:
-        analyseThread = threading.Thread(target=analysis(state))
+        analyseThread = threading.Thread(target=analysis, args=(state,))
         analyseThread.start()
         time.sleep(3)
         
 def analysis(state):    
-    if state.gotGeasture: return
-    state.gotGeasture = True
+    if state.gotGesture: return
+    state.gotGesture = True
     consoleInterface.print_status("Verarbeite Videosignal...")
     time.sleep(1)
     
@@ -38,7 +38,7 @@ def analysis(state):
     if state.useTextToSpeech:
         speechInterface.say(text)
     
-    state.gotGeasture = False
+    state.gotGesture = False
 
 state = State()
   
@@ -50,5 +50,7 @@ captureThread.start()
 
 # Warten, bis der Nebenthread beendet ist
 consoleThread.join()
+state.isRunning = False
+captureThread.join()
 consoleInterface.print_instruction("SilenceAI wurde beendet")
 exit(0)
