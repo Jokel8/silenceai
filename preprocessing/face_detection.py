@@ -1,4 +1,5 @@
 import cv2
+import os
 
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +
                     "haarcascade_frontalface_default.xml")
@@ -37,8 +38,14 @@ if not stream.isOpened():
     exit()
 
 fps = stream.get(cv2.CAP_PROP_FPS)
+if not fps or fps <= 0:
+    fps = 30
 width = int(stream.get(3))
 height = int(stream.get(4))
+
+out_dir = os.path.dirname("Wettbewerbe/BWKI-2025/assets/6_facial_detection.mp4")
+if out_dir:
+    os.makedirs(out_dir, exist_ok=True)
 
 # list of FourCC video codes: https://softron.zendesk.com/hc/en-us/articles/207695697-List-of-FourCC-codes-for-video-codecs
 output = cv2.VideoWriter("Wettbewerbe/BWKI-2025/assets/6_facial_detection.mp4",

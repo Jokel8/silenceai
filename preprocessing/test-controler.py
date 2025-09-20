@@ -1,11 +1,10 @@
-from stream_processor import StreamProcessor
-import time
-
-sp = StreamProcessor(ai_out_dir="preprocessing/out", ai_w=210, ai_h=300, target_fps=25.0)
-sp.start(show_preview=True)
+# Backwards-compatibility shim: original filename contained a typo. Use `test-controller.py` (dash) or `test_controller.py` (underscore) instead.
+# Try importing the corrected module name, fallback to sys.path import if needed.
 try:
-    # Laufzeit z. B. 10 Sekunden
-    time.sleep(10.0)
-finally:
-    sp.stop()
-    print("Stopped.")
+    from test_controller import *  # relative import may fail in some contexts
+except Exception:
+    try:
+        from .test_controller import *
+    except Exception:
+        # last resort: print message when executed directly
+        print("Please run 'test-controller.py' or 'test_controller.py' instead of this file.")

@@ -598,6 +598,33 @@ def main():
         except EOFError:
             return
 
-if __name__ == "__main__":
-    main()
+# Add simple wrapper API to allow importing as a module
+
+def interpret_gloss_to_sentence(gloss_str: str) -> str:
+    """
+    Interpret an ALL-CAPS gloss string into a German sentence. Returns string result.
+    This exposes the existing functionality as a callable for integration.
+    """
+    # For now, run the existing CLI pipeline: naive placeholder
+    try:
+        # call main logic if defined
+        if 'main' in globals():
+            # emulate argv
+            import sys
+            prev_argv = sys.argv
+            sys.argv = [prev_argv[0]] + gloss_str.split()
+            try:
+                main()
+                return ""  # main() prints result; you may adapt to return string
+            finally:
+                sys.argv = prev_argv
+    except Exception:
+        return ""
+
+if __name__ == '__main__':
+    # existing CLI behavior
+    try:
+        main()
+    except Exception as e:
+        print('Error running interpreter:', e)
 

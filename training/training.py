@@ -6,33 +6,38 @@ import tensorflow as tf
 from tensorflow.keras import models, layers, callbacks
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+import joblib
 
-WORK_DIR = "SilenceAI/training"
-os.chdir(WORK_DIR)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "rawData", "basicZweiVier")
+MODEL_DIR = os.path.join(BASE_DIR, "models")
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+os.makedirs(MODEL_DIR, exist_ok=True)
+os.makedirs(LOG_DIR, exist_ok=True)
 
 # Parameter
-DATA_DIR = "rawData/basicZweiVier"
 IMG_SIZE = (128, 128)  # wird nur für MediaPipe verarbeitet
 BATCH_SIZE = 32
 EPOCHS = 30
 
 mp_hands = mp.solutions.hands
+# create a reusable Hands instance for preprocessing
+_hands_processor = mp_hands.Hands(static_image_mode=True, max_num_hands=1)
 
-def extract_keypoints(image):
+def extract_keypoints(image, hands_processor=_hands_processor):
     """Keypoints aus einem Bild extrahieren"""
-    with mp_hands.Hands(static_image_mode=True, max_num_hands=1) as hands:
-        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        results = hands.process(rgb)
-        if results.multi_hand_landmarks:
-            hand_landmarks = results.multi_hand_landmarks[0]
-            return np.array([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark]).flatten()
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    results = hands_processor.process(rgb)
+    if results.multi_hand_landmarks:
+        hand_landmarks = results.multi_hand_landmarks[0]
+        return np.array([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark]).flatten()
     return None  # keine Hand erkannt
 
 # Daten vorbereiten
 X = []
 y = []
 
-classes = sorted(os.listdir(DATA_DIR))
+classes = sorted([d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))])
 for label in classes:
     folder = os.path.join(DATA_DIR, label)
     for file in os.listdir(folder):
@@ -65,9 +70,6 @@ model = models.Sequential([
 
 model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
-LOG_DIR = "logs"
-os.makedirs(LOG_DIR, exist_ok=True)
-
 tensorboard_cb = tf.keras.callbacks.TensorBoard(log_dir=LOG_DIR, histogram_freq=1)
 
 # Training
@@ -80,6 +82,8 @@ history = model.fit(
 )
 
 # Modell speichern
-model.save("models/gesture_model.h5")
-print("Training abgeschlossen. Modell gespeichert als mlp_gesture_model.h5")
+model_path = os.path.join(MODEL_DIR, "gesture_model.h5")
+model.save(model_path)
+joblib.dump(le, os.path.join(MODEL_DIR, "label_encoder.joblib"))
+print(f"Training abgeschlossen. Modell gespeichert als {model_path}")
 print("Klassen:", le.classes_)

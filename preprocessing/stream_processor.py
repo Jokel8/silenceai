@@ -5,7 +5,7 @@ Modular realtime pipeline for:
  - SelfieSegmentation + Hands + Pose -> safe foreground mask
  - CLAHE (contrast) + brightness on foreground
  - Preview windows for user
- - AI output: RGBA frames sized 210x260 at exactly 25 FPS
+ - AI output: RGBA frames sized 210x300 at exactly 25 FPS
  - AI frames saved by worker (PNG) to disk
 Usage:
   from stream_processor import StreamProcessor
@@ -41,7 +41,8 @@ class StreamProcessor:
                  clahe_clip:float = 2.0,
                  clahe_tile=(8,8),
                  crop_padding:float = 1.08,
-                 crop_min_frac:float = 0.42):
+                 crop_min_frac:float = 0.42,
+                 on_ai_frame: Optional[callable] = None):
         self.camera_index = camera_index
         self.ai_out_dir = ai_out_dir
         os.makedirs(self.ai_out_dir, exist_ok=True)
@@ -50,6 +51,7 @@ class StreamProcessor:
         self.TARGET_FPS = target_fps
         self.FRAME_INTERVAL = 1.0 / target_fps
         self.ai_q = queue.Queue(maxsize=ai_queue_max)
+        self.on_ai_frame = on_ai_frame
 
         # MediaPipe params
         self.SEG_THRESHOLD = seg_threshold
@@ -300,6 +302,12 @@ class StreamProcessor:
             # push into AI queue (all frames at target fps)
             try:
                 self.ai_q.put_nowait(crop_rgba)
+                # call optional live hook
+                if self.on_ai_frame:
+                    try:
+                        self.on_ai_frame(crop_rgba)
+                    except Exception:
+                        pass
             except queue.Full:
                 # if queue is full, we drop (or you can block until space)
                 pass
