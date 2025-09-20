@@ -158,12 +158,23 @@ def main(args):
 
 
 if __name__ == '__main__':
+    import argparse
     p = argparse.ArgumentParser()
-    p.add_argument('--data_dir', default='data', help='dataset root with train/val/test')
-    p.add_argument('--model_dir', default='models', help='output directory')
-    p.add_argument('--checkpoint_dir', default=None, help='checkpoint directory (overrides default)')
+    # Primary (canonical) names
+    p.add_argument('--data_dir', dest='data_dir', default='data', help='dataset root with train/val/test')
+    p.add_argument('--model_dir', dest='model_dir', default='models', help='output directory')
+    p.add_argument('--checkpoint_dir', dest='checkpoint_dir', default=None, help='checkpoint directory (overrides default)')
+
+    # Backwards-compatible aliases (used by GUI and older callers)
+    p.add_argument('--data', dest='data_dir', help=argparse.SUPPRESS)
+    p.add_argument('--model', dest='model_dir', help=argparse.SUPPRESS)
+    p.add_argument('--checkpoint', dest='checkpoint_dir', help=argparse.SUPPRESS)
+
     p.add_argument('--epochs', type=int, default=10)
-    p.add_argument('--batch_size', type=int, default=16)
+    # accept both --batch_size and --batch-size
+    p.add_argument('--batch_size', dest='batch_size', type=int, default=16, help='batch size')
+    p.add_argument('--batch-size', dest='batch_size', type=int, help=argparse.SUPPRESS)
+
     p.add_argument('--width', type=int, default=210)
     p.add_argument('--height', type=int, default=300)
     p.add_argument('--save_epochs', action='store_true', help='Also save model each epoch')

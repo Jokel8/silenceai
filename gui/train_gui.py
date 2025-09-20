@@ -75,6 +75,8 @@ class TrainGUI(tk.Tk):
         self.start_btn.pack(side=tk.LEFT, padx=6)
         self.stop_btn = ttk.Button(btn_frame, text="Stop", command=self.stop_training, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.LEFT, padx=6)
+        ttk.Button(btn_frame, text="Export Best Model", command=self.export_best_model).pack(side=tk.LEFT, padx=6)
+        ttk.Button(btn_frame, text="Open TensorBoard", command=self.launch_tensorboard).pack(side=tk.LEFT, padx=6)
         ttk.Button(btn_frame, text="Open model folder", command=self.open_model_folder).pack(side=tk.LEFT, padx=6)
         ttk.Button(btn_frame, text="Save settings", command=self.save_settings).pack(side=tk.LEFT, padx=6)
         ttk.Button(btn_frame, text="Clear logs", command=self.clear_logs).pack(side=tk.LEFT, padx=6)
@@ -193,6 +195,61 @@ class TrainGUI(tk.Tk):
             os.startfile(folder)
         except Exception:
             messagebox.showinfo("Info", f"Open folder: {folder}")
+
+    def export_best_model(self):
+        """Find a best checkpoint and copy it to the model output folder as best_model.h5."""
+        import shutil
+        ckpt = self.ckpt_entry.get().strip()
+        model = self.model_entry.get().strip()
+        if not model:
+            messagebox.showerror("Error", "Set model output path first")
+            return
+        out_dir = os.path.dirname(model)
+        # candidate locations
+        candidates = []
+        if ckpt and os.path.isdir(ckpt):
+            candidates.append(os.path.join(ckpt, 'best.h5'))
+            # also search for best*.h5
+            for f in os.listdir(ckpt):
+                if f.lower().startswith('best') and f.lower().endswith('.h5'):
+                    candidates.append(os.path.join(ckpt, f))
+        if out_dir and os.path.isdir(out_dir):
+            candidates.append(os.path.join(out_dir, 'best_model.h5'))
+            candidates.append(os.path.join(out_dir, 'best.h5'))
+
+        found = None
+        for p in candidates:
+            if p and os.path.exists(p):
+                found = p
+                break
+        if not found:
+            messagebox.showinfo("Not found", "No best checkpoint found in checkpoint or model directories. Run training first or select the checkpoint folder.")
+            return
+        dest = os.path.join(out_dir, 'best_model.h5')
+        try:
+            os.makedirs(out_dir, exist_ok=True)
+            shutil.copy2(found, dest)
+            messagebox.showinfo("Exported", f"Copied {os.path.basename(found)} to {dest}")
+            self.log_q.put(f"Exported best model: {dest}\n")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to copy best model: {e}")
+            self.log_q.put(f"Export failed: {e}\n")
+
+    def launch_tensorboard(self):
+        """Ask for a TensorBoard logdir and start TensorBoard in background."""
+        logdir = filedialog.askdirectory(title="Select TensorBoard log directory")
+        if not logdir:
+            return
+        try:
+            # Start tensorboard as a background process. User must have tensorboard installed and in PATH.
+            subprocess.Popen(["tensorboard", "--logdir", logdir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            messagebox.showinfo("TensorBoard", f"Started TensorBoard for {logdir}\nOpen http://localhost:6006 in your browser if it doesn't open automatically.")
+            self.log_q.put(f"Started TensorBoard for {logdir}\n")
+        except FileNotFoundError:
+            messagebox.showerror("Error", "TensorBoard executable not found. Install it with `pip install tensorboard` and ensure it's in PATH.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to start TensorBoard: {e}")
+            self.log_q.put(f"TensorBoard start failed: {e}\n")
 
     def save_settings(self):
         cfg = {
