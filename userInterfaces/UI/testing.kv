@@ -1,0 +1,30 @@
+<Test>
+    name:name
+    favPizza:favPizza
+    
+    GridLayout:
+        cols:1
+        size: root.width, root.height
+
+        GridLayout:
+            cols:2
+
+            Label:
+                text: "Name"
+            TextInput:
+                id: name
+                multiline: False
+                background_color: (1,1,0,1)
+
+            Label:
+                text: "Faviorite Pizza"
+            TextInput:
+                id: favPizza
+                multiline: False
+        
+        Button:
+            text: "Submit"
+            font_size: 32
+            on_press: root.press()
+            background_normal: ''
+            background_color: (0,0,1,1)

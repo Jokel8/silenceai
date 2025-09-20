@@ -1,0 +1,55 @@
+#:import utils kivy.utils
+
+<UI>
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+
+        padding: 20  # Padding around the layout
+        spacing: 20 # Space between buttons
+
+        BoxLayout:
+            size_hint: (1, 0.25)
+            orientation: 'horizontal'
+            size: root.width, root.height
+
+            padding: 20  # Padding around the layout
+            spacing: 20 # Space between buttons
+            
+            ToggleButton:
+                text: "Boxing 0"
+                state: 'down'
+            
+            ToggleButton:
+                text: "Boxing 0"
+                state: 'down'
+
+            ToggleButton:
+                text: "Boxing 1"
+                state: 'down'
+            
+            ToggleButton:
+                text: "Boxing 2"
+                state: 'down'
+
+            ToggleButton:
+                text: "Boxing 3"
+                state: 'down'
+            
+            ToggleButton:
+                text: "Boxing 4"
+                state: 'down'
+        Button:
+            text: "Boxing 5"
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: 10
+            size_hint: (1, 0.25)
+            
+            
+            ToggleButton:
+                text: "Boxing 6"
+                state: 'down'
+                size_hint: (0.1, 1)
+            Button:
+                text: "Boxing 7"
