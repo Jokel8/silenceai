@@ -47,7 +47,7 @@ class HandKeypointsExtractor:
             if cv2.waitKey(5) & 0xFF == 27:  # ESC zum Beenden
                 exit(0)
             
-            time.sleep(0.2)
+            time.sleep(0.01)
             
             # Keypoints initialisieren (21 Keypoints pro Hand, jeweils x, y, z)
             left_hand = np.zeros(63)  # 21 * 3 = 63
@@ -162,8 +162,11 @@ if __name__ == "__main__":
     WORK_DIR = "SilenceAI/training"
     os.chdir(WORK_DIR)
     
-    input_dir = "rawData/basicZweiVier"
-    output_dir = "keypoints/basicZweiVier"
+    input_dir = "rawData/mapped_phoenix"
+    output_dir = "keypoints/phoenix"
+    
+    #input_dir = "rawData/basicZweiVier"
+    #output_dir = "keypoints/basicZweiVier"
 
     HandKeypointsExtractor(input_dir, output_dir).extract()
     print("\nVerarbeitung abgeschlossen!")
