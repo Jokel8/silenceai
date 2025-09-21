@@ -15,7 +15,7 @@ import numpy as np
 import mediapipe as mp
 import threading, queue, os, time
 from typing import Optional
-import stream_processor as stpro
+import importlib.util
 
 
 # ------------------- Defaults / Config -------------------
@@ -46,11 +46,11 @@ class Preprocessing:
         self.FRAME_INTERVAL = 1.0 / target_fps
         self.ai_q = queue.Queue(maxsize=ai_queue_max)
 
-    def set_brightness(stpro, v: float):
-        stpro._brightness = float(max(0.0, v))
+    def set_brightness(self, v: float):
+        self._brightness = float(max(0.0, v))
 
-    def set_clahe_clip(stpro, v: float):
-        stpro.CLAHE_CLIP = float(max(0.01, v))
+    def set_clahe_clip(self, v: float):
+        self.CLAHE_CLIP = float(max(0.01, v))
 
     # ------------------- Helper image functions -------------------
     def _apply_clahe(self, img_bgr):
@@ -104,8 +104,8 @@ class Preprocessing:
         return bgra
 
     def _crop_and_resize_by_mask(self, img, mask, target_w=None, target_h=None, padding=None, min_frac=None):
-        if target_w is None: target_w = stpro.AI_W
-        if target_h is None: target_h = stpro.AI_H
+        if target_w is None: target_w = self.AI_W
+        if target_h is None: target_h = self.AI_H
         if padding is None: padding = 1.08
         if min_frac is None: min_frac = 0.42
         ih, iw = mask.shape[:2]

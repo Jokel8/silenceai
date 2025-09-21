@@ -7,9 +7,17 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import mediapipe as mp
 import tensorflow as tf
 import joblib
+import importlib.util
+
 
 from extractKeypoints import HandKeypointsExtractor
 from normalizKeypoints import HandKeypointsNormalizer
+
+stream_prozessor_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'userInterfaces'))
+app = importlib.util.spec_from_file_location("graficInterface", os.path.join(stream_prozessor_dir, "stream_processor.py"))
+stream_processor_module = importlib.util.module_from_spec(app)
+app.loader.exec_module(stream_processor_module)
+strproc = stream_processor_module.StreamProcessor
 
 handKeypointExtractor = HandKeypointsExtractor()
 handKeypointsNormalizer = HandKeypointsNormalizer()
@@ -27,40 +35,40 @@ if os.path.exists(LABEL_ENCODER_PATH):
 else:
     CLASSES = ["Zwei", "Vier"]  # Fallback
 
-def capture_camera_frames():
-    """Step 1: Capture frames from camera at 25 FPS"""
-    cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FPS, 25)
+# def capture_camera_frames():
+#     """Step 1: Capture frames from camera at 25 FPS"""
+#     cap = cv2.VideoCapture(0)
+#     cap.set(cv2.CAP_PROP_FPS, 25)
     
-    frame_time = 1/25
-    prev_time = time.time()
+#     frame_time = 1/25
+#     prev_time = time.time()
     
-    while cap.isOpened():
-        curr_time = time.time()
-        if curr_time - prev_time < frame_time:
-            continue
+#     while cap.isOpened():
+#         curr_time = time.time()
+#         if curr_time - prev_time < frame_time:
+#             continue
             
-        ret, frame = cap.read()
-        if not ret:
-            break
+#         ret, frame = cap.read()
+#         if not ret:
+#             break
             
-        frame = cv2.flip(frame, 1)
+#         frame = cv2.flip(frame, 1)
         
-        # Calculate FPS
-        fps = 1 / (curr_time - prev_time)
-        prev_time = curr_time
+#         # Calculate FPS
+#         fps = 1 / (curr_time - prev_time)
+#         prev_time = curr_time
         
-        # Add FPS display
-        cv2.putText(frame, f"FPS: {int(fps)}", (frame.shape[1] - 110, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+#         # Add FPS display
+#         cv2.putText(frame, f"FPS: {int(fps)}", (frame.shape[1] - 110, 30),
+#                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         
-        yield frame
+#         yield frame
         
-        if cv2.waitKey(1) & 0xFF == 27:
-            break
+#         if cv2.waitKey(1) & 0xFF == 27:
+#             break
     
-    cap.release()
-    cv2.destroyAllWindows()
+#     #cap.release()
+#     cv2.destroyAllWindows()
 
 def analyze_keypoints(normalized_data):
     """Step 4: Analyze normalized keypoints using AI model"""
@@ -113,39 +121,40 @@ def analyze_keypoints(normalized_data):
 def run_pipeline():
     """Main pipeline that executes all steps in sequence"""
     print("Starting pipeline...")
+    app.run()
     
     while True:
         # Step 1: Get frame from camera
-        for frame in capture_camera_frames():
-            # Step 2: Extract keypoints
-            keypoints = handKeypointExtractor.extractKeypoints(frame)
-            frame = keypoints.pop('frame')
-            
-            # Step 3: Normalize keypoints
-            keypoints = handKeypointsNormalizer.relative_to_wrist_normalize(keypoints)
-            keypoints = handKeypointsNormalizer.global_minmax_normalize(keypoints)
-            
-            # Step 4: Analyze with AI model
-            analysis_result = analyze_keypoints(keypoints)
-            
-            # Display results
-            cv2.putText(frame, analysis_result['prediction']['text'], 
-                      (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-            
-            cv2.imshow("Pipeline Output", frame)
-            if cv2.waitKey(5) & 0xFF == 27:
-                exit(0)
-            
-            # Print debugging info
-            if analysis_result['prediction']['class'] is not None:
-                print("\nTop 3 Predictions:")
-                for class_name, prob in analysis_result['top_3']:
-                    print(f"Class {class_name}: {prob*100:.2f}%")
-            else:
-                print("No confident prediction.")
-            
-            # Return result for further processing
-            yield analysis_result
+        strproc._ai_saver_worker
+        # Step 2: Extract keypoints
+        keypoints = handKeypointExtractor.extractKeypoints(frame)
+        frame = keypoints.pop('frame')
+        
+        # Step 3: Normalize keypoints
+        keypoints = handKeypointsNormalizer.relative_to_wrist_normalize(keypoints)
+        keypoints = handKeypointsNormalizer.global_minmax_normalize(keypoints)
+        
+        # Step 4: Analyze with AI model
+        analysis_result = analyze_keypoints(keypoints)
+        
+        # Display results
+        cv2.putText(frame, analysis_result['prediction']['text'], 
+                    (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+        
+        cv2.imshow("Pipeline Output", frame)
+        if cv2.waitKey(5) & 0xFF == 27:
+            exit(0)
+        
+        # Print debugging info
+        if analysis_result['prediction']['class'] is not None:
+            print("\nTop 3 Predictions:")
+            for class_name, prob in analysis_result['top_3']:
+                print(f"Class {class_name}: {prob*100:.2f}%")
+        else:
+            print("No confident prediction.")
+        
+        # Return result for further processing
+        yield analysis_result
 
 if __name__ == "__main__":
     # Run the pipeline
