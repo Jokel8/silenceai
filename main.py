@@ -10,6 +10,7 @@ class State():
         self.useTextToSpeech = True
         self.gotGeasture = False
         self.guesses = [["", 0.0], ["", 0.0], ["", 0.0]]
+        self.output = ""
 
 def captureLoop(state):    
     consoleInterface.print_status("Starte Verarbeitung...")
@@ -42,7 +43,7 @@ def analysis(state):
     state.gotGeasture = False
 
 state = State()
-  
+
 consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
 consoleThread.start()
 
