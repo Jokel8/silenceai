@@ -4,29 +4,45 @@ from pathlib import Path
 import os
 
 class HandKeypointsNormalizer:    
-    def relative_to_wrist_normalize(self, points_array):
+    def relative_to_wrist_normalize(self, points_dict):
         """
-        Normalize keypoints relative to wrist position
+        Normalize keypoints relative to wrist position for both hands
         Args:
-            points_array: numpy array of shape (21, 3) containing x,y,z coordinates
+            points_dict: Dictionary with 'left_hand' and 'right_hand' arrays
         Returns:
-            Normalized array of same shape
+            Dictionary with normalized arrays
         """
-        wrist = points_array[0]  # First point is wrist
-        return points_array - wrist
+        normalized = {}
+        for hand in ['left_hand', 'right_hand']:
+            points_array = points_dict[hand]
+            if np.any(points_array != 0):
+                # Reshape to (21,3) for easier processing
+                points = points_array.reshape(21, 3)
+                # First point is wrist
+                wrist = points[0]
+                # Normalize relative to wrist
+                normalized[hand] = (points - wrist).flatten()
+            else:
+                normalized[hand] = points_array
+        return normalized
 
-    def global_minmax_normalize(self, points_array):
+    def global_minmax_normalize(self, points_dict):
         """
-        Perform global min-max normalization
+        Perform global min-max normalization on both hands
         Args:
-            points_array: numpy array of shape (21, 3)
+            points_dict: Dictionary with 'left_hand' and 'right_hand' arrays
         Returns:
-            Normalized array of same shape
+            Dictionary with normalized arrays
         """
-        max_abs_value = np.abs(points_array).max()
-        if max_abs_value > 0:
-            return points_array / max_abs_value
-        return points_array
+        normalized = {}
+        for hand in ['left_hand', 'right_hand']:
+            points_array = points_dict[hand]
+            max_abs_value = np.abs(points_array).max()
+            if max_abs_value > 0:
+                normalized[hand] = points_array / max_abs_value
+            else:
+                normalized[hand] = points_array
+        return normalized
     
     def process_file(self, csv_file, output_directory):
         df = pd.read_csv(csv_file)

@@ -12,3 +12,4 @@ Gebärdensprache ist eine komplexe und ausdrucksstarke Kommunikationsform, die f
 2.  Keypoint-Erkennung (Skelett der Hände berechnen) mit MediaPipe Holistic @Jonas
 3.  Gebärdenerkennung durch ein eigenes Modell mit den RWTH Datensätzen @Jonas
 4.  Post-Processing (Grammatikalische Korrektur und ggf. einfügen von Präpositionen) mit Qwen2 0.5B Parameter @Kende
+5.  Sprachausgabe

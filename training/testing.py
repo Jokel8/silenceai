@@ -47,9 +47,9 @@ cap = cv2.VideoCapture(0)
 
 with mp_hands.Hands(
     static_image_mode=False,
-    max_num_hands=1,
-    min_detection_confidence=0.7,
-    min_tracking_confidence=0.7
+    max_num_hands=2,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
 ) as hands:
 
     while cap.isOpened():
@@ -64,6 +64,17 @@ with mp_hands.Hands(
         gesture_text = "Keine Hand erkannt"
 
         if results.multi_hand_landmarks:
+            # Draw hand landmarks
+            for hand_landmarks in results.multi_hand_landmarks:
+                # Draw the landmarks
+                mp_drawing.draw_landmarks(
+                    frame,
+                    hand_landmarks,
+                    mp_hands.HAND_CONNECTIONS,
+                    mp_drawing.DrawingSpec(color=(121, 22, 76), thickness=2, circle_radius=4),  # Points
+                    mp_drawing.DrawingSpec(color=(250, 44, 250), thickness=2)  # Lines
+                )
+                
             features = extract_keypoints_from_results(results).reshape(1, -1)
             print(f"Feature values min/max: {features.min():.3f}/{features.max():.3f}")
             

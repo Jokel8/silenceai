@@ -1,0 +1,9 @@
+cv2
+cvzone
+mediapipe
+threading
+pyttsx3
+pyttsx3
+joblib
+tensorflow
+numpy

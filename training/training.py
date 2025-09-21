@@ -14,7 +14,7 @@ class HandGestureClassifier:
         self.data_directory = Path("datasets/" + identifier + "/")
         self.model = None
         self.label_encoder = LabelEncoder()
-        self.log_dir = f"logs/{identifier}/"
+        self.log_dir = f"logs/{identifier}2/"
         
     def load_and_prepare_data(self):
         csv_files = list(self.data_directory.glob("*_dataset.csv"))
@@ -155,10 +155,10 @@ class HandGestureClassifier:
 
 def main():
     # Model name configuration
-    model_name = "test3"  # You can change this to any name you want
+    model_name = "phoenix2"  # You can change this to any name you want
     
     # Classifier initialisieren
-    classifier = HandGestureClassifier(model_name)
+    classifier = HandGestureClassifier("phoenix")
     
     # Modell trainieren
     history = classifier.train(
@@ -178,17 +178,15 @@ if __name__ == "__main__":
     WORK_DIR = "SilenceAI/training"
     os.chdir(WORK_DIR)
     
-    num_cores = max(1, int(os.cpu_count() // 2))
-    num_cores = os.cpu_count()  # Alternativ alle Kerne nutzen
-    print(f"Verwende {num_cores} CPU-Kerne für TensorFlow")
-    os.environ["OMP_NUM_THREADS"] = str(num_cores)
-    os.environ["TF_NUM_INTRAOP_THREADS"] = str(num_cores)
-    os.environ["TF_NUM_INTEROP_THREADS"] = str(num_cores)
-    
-    # TensorFlow Konfiguration
-    tf.random.set_seed(42)
-    tf.config.threading.set_intra_op_parallelism_threads(num_cores)
-    tf.config.threading.set_inter_op_parallelism_threads(num_cores)
+    # num_cores = max(1, int(os.cpu_count() // 2))
+    # num_cores = os.cpu_count()  # Alternativ alle Kerne nutzen
+    # print(f"Verwende {num_cores} CPU-Kerne für TensorFlow")
+    # os.environ["OMP_NUM_THREADS"] = str(num_cores)
+    # os.environ["TF_NUM_INTRAOP_THREADS"] = str(num_cores)
+    # os.environ["TF_NUM_INTEROP_THREADS"] = str(num_cores)
+    # tf.random.set_seed(42)
+    # tf.config.threading.set_intra_op_parallelism_threads(num_cores)
+    # tf.config.threading.set_inter_op_parallelism_threads(num_cores)
     
     # GPU falls verfügbar
     if tf.config.list_physical_devices('GPU'):
