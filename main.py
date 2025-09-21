@@ -42,17 +42,16 @@ def analysis(state):
 
 state = State()
   
-# consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
-# consoleThread.start()
+consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
+consoleThread.start()
 
-graficThread = threading.Thread(target=graficInterface.MyApp, args=(state,))
-graficThread.start()
+app = graficInterface.MyApp(state)
+app.run()
 
 # captureThread = threading.Thread(target=captureLoop, args=(state,))
 # captureThread.start()
 
-# # Warten, bis der Nebenthread beendet ist
-# consoleThread.join()
-graficThread.join()
+# Warten, bis der Nebenthread beendet ist
+consoleThread.join()
 consoleInterface.print_instruction("SilenceAI wurde beendet")
 exit(0)

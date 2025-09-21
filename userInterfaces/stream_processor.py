@@ -71,10 +71,6 @@ class StreamProcessor:
         self.state = state
 
     # ------------------- Public controls -------------------
-    def set_preprocessing(self, enabled: bool):
-        """Enable or disable preprocessing at runtime."""
-        self.state.usePreProcessing = enabled
-        print("Preprocessing toggled")
 
     def set_brightness(self, v: float):
         self._brightness = float(max(0.0, v))

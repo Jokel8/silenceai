@@ -2,7 +2,6 @@
 #:import utils kivy.utils
 
 <UI>:
-    toggle_preprocessing_btn: toggle_preprocessing_btn
     preview_image: preview_image
 
     BoxLayout:
@@ -12,7 +11,7 @@
         spacing: 20
 
         BoxLayout:
-            size_hint: (1, 0.25)
+            size_hint: (1, 0.025)
             orientation: 'horizontal'
             padding: 20
             spacing: 20
@@ -26,6 +25,7 @@
             ToggleButton:
                 text: "use Postprocessing"
                 state: 'down'
+                on_state: root.toggle_postprocessing(self)
 
             ToggleButton:
                 text: "Boxing 1"
@@ -42,6 +42,7 @@
             ToggleButton:
                 text: "use text to Speech"
                 state: 'down'
+                on_state: root.toggle_TextToSpeech(self)
 
         # Replaced the single button with the live preview image
         Image:
@@ -51,19 +52,11 @@
             keep_ratio: True
             source: ''  # initially empty; texture will be set by ui.py
 
-        BoxLayout:
-            orientation: 'horizontal'
-            spacing: 10
-            size_hint: (1, 0.25)
+        Label:
+            text: "Output"
+            size_hint: (1, 0.1)
 
-            ToggleButton:
-                text: "use Video to text"
-                state: 'down'
-                size_hint: (0.1, 1)
-
-            Button:
-                text: "Boxing 7"
-
+        
 
 
 

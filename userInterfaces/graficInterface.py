@@ -10,9 +10,11 @@ import os
 try:
     from userInterfaces.stream_processor import StreamProcessor
     Builder.load_file('userInterfaces/uiDesign.kv')
+    from userInterfaces import consoleInterface
 
 except ImportError:
     from stream_processor import StreamProcessor
+    import consoleInterface
     Builder.load_file('uiDesign.kv')
 
 
@@ -22,11 +24,7 @@ class UI(Widget):
     def __init__(self, buttonState):
         super(UI, self).__init__()
         self.buttonState = buttonState
-    # references to widgets inside kv
-    toggle_preprocessing_btn = ObjectProperty(None)
-    toggle_postprocessing_btn = ObjectProperty(None)
-    toggle_videototext_btn = ObjectProperty(None)
-    toggle_texttospeech_btn = ObjectProperty(None)
+    
 
     # preview image widget (Image in kv)
     preview_image = ObjectProperty(None)
@@ -37,12 +35,27 @@ class UI(Widget):
     def toggle_preprocessing(self, instance):
         # instance is the ToggleButton — check instance.state ('down' or 'normal')
         if instance.state == 'down':
-            if self.stream_proc is not None:
-                self.stream_proc.set_preprocessing(True)
+            self.buttonState.usePreProcessing = True
+            consoleInterface.print_status("Preprocessing activated")
         else:
-            print("Preprocessing is disabled")
-            if self.stream_proc is not None:
-                self.stream_proc.set_preprocessing(False)
+            self.buttonState.usePreProcessing = False
+            consoleInterface.print_status("Preprocessing deactivated")
+    def toggle_postprocessing(self, instance):
+        # instance is the ToggleButton — check instance.state ('down' or 'normal')
+        if instance.state == 'down':
+            self.buttonState.usePostProcessing = True
+            consoleInterface.print_status("Postprocessing activated")
+        else:
+            self.buttonState.usePostProcessing = False
+            consoleInterface.print_status("Postprocessing deactivated")
+    def toggle_TextToSpeech(self, instance):
+        # instance is the ToggleButton — check instance.state ('down' or 'normal')
+        if instance.state == 'down':
+            self.buttonState.useTextToSpeech = True
+            consoleInterface.print_status("TextToSpeech activated")
+        else:
+            self.buttonState.useTextToSpeech = False
+            consoleInterface.print_status("TextToSpeech deactivated")
 
     def set_stream_processor(self, sp: StreamProcessor):
         """Called by App after creating StreamProcessor so UI can access it."""
@@ -73,7 +86,7 @@ class UI(Widget):
             self.preview_image.canvas.ask_update()
         except Exception as e:
             # don't crash UI for one conversion error
-            print("Preview update error:", e)
+            consoleInterface.print_error("Preview update error:", e)
 
 
 class MyApp(App):
@@ -105,7 +118,7 @@ class MyApp(App):
             if hasattr(self, 'sp') and self.sp is not None:
                 self.sp.stop()
         except Exception as e:
-            print("Error stopping stream processor:", e)
+            consoleInterface.print_error("Error stopping stream processor:", e)
 
 if __name__ == '__main__':
     class State():
