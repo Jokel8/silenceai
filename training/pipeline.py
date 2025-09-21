@@ -7,16 +7,20 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import mediapipe as mp
 import tensorflow as tf
 import joblib
+import threading
+import pyttsx3
 
 from extractKeypoints import HandKeypointsExtractor
 from normalizKeypoints import HandKeypointsNormalizer
+
+speech_lock = threading.Lock()
 
 handKeypointExtractor = HandKeypointsExtractor()
 handKeypointsNormalizer = HandKeypointsNormalizer()
 
 # Model and LabelEncoder paths
-MODEL_PATH = "silenceai/Training/models/gesture_model_phoenix1.h5"
-LABEL_ENCODER_PATH = "silenceai/Training/models/label_encoder_phoenix.pkl"
+MODEL_PATH = "silenceai/Training/models/gesture_model_phoenix2.h5"
+LABEL_ENCODER_PATH = "silenceai/Training/models/label_encoder_phoenix2.pkl"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 #model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -89,13 +93,18 @@ def analyze_keypoints(normalized_data):
         for idx in top_3_indices
     ]
     
+    if CLASSES[pred_class] == "si":
+        prediction = "Stille"
+    else:
+        prediction = CLASSES[pred_class]
+    
     # Apply confidence threshold
     confidence_threshold = 0.001
     if probs[pred_class] > confidence_threshold:
         prediction = {
-            'class': CLASSES[pred_class],
+            'class': prediction,
             'confidence': probs[pred_class],
-            'text': f"Zeichen: {CLASSES[pred_class]} ({probs[pred_class]*100:.1f}%)"
+            'text': f"{prediction} ({probs[pred_class]*100:.1f}%)"
         }
     else:
         prediction = {
@@ -109,6 +118,13 @@ def analyze_keypoints(normalized_data):
         'prediction': prediction,
         'top_3': top_3_predictions
     }
+
+def say_text(text):
+    with speech_lock:
+        engine = pyttsx3.init()
+        engine.setProperty('rate', 200)
+        engine.say(text)
+        engine.runAndWait()
 
 def run_pipeline():
     """Main pipeline that executes all steps in sequence"""
@@ -129,7 +145,8 @@ def run_pipeline():
             analysis_result = analyze_keypoints(keypoints)
             
             # Display results
-            cv2.putText(frame, analysis_result['prediction']['text'], 
+            prediction = str(analysis_result['prediction']['text'])
+            cv2.putText(frame, prediction, 
                       (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
             
             cv2.imshow("Pipeline Output", frame)
@@ -143,6 +160,14 @@ def run_pipeline():
                     print(f"Class {class_name}: {prob*100:.2f}%")
             else:
                 print("No confident prediction.")
+                
+            if analysis_result['prediction']['confidence'] > 0.01:
+                if speech_lock.acquire(blocking=False):
+                    try:
+                        thread = threading.Thread(target=say_text, args=(prediction,))
+                        thread.start()
+                    finally:
+                        speech_lock.release()
             
             # Return result for further processing
             yield analysis_result

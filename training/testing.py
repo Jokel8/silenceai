@@ -7,8 +7,8 @@ import joblib
 import os
 
 # Modell und LabelEncoder laden
-MODEL_PATH = "silenceai/Training/models/gesture_model_phoenix1.h5"
-LABEL_ENCODER_PATH = "silenceai/Training/models/label_encoder_phoenix.pkl"
+MODEL_PATH = "silenceai/Training/models/gesture_model_phoenix2.h5"
+LABEL_ENCODER_PATH = "silenceai/Training/models/label_encoder_phoenix2.pkl"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 

@@ -14,7 +14,7 @@ def say(text):
         engine.runAndWait()
     except Exception as e:
         print(f"Fehler bei der Sprachausgabe: {e}")
-        consoleInterface.print_error("Postprocessing wird angewendet...")
+        consoleInterface.print_error("Fehler bei der Sprachausgabe: {e}")
 
 
 if __name__ == "__main__":
