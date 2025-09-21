@@ -51,7 +51,7 @@ def capture_camera_frames():
         prev_time = curr_time
         
         # Add FPS display
-        cv2.putText(frame, f"FPS: {int(fps)}", (10, 30),
+        cv2.putText(frame, f"FPS: {int(fps)}", (frame.shape[1] - 110, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         
         yield frame
@@ -90,7 +90,7 @@ def analyze_keypoints(normalized_data):
     ]
     
     # Apply confidence threshold
-    confidence_threshold = 0.5
+    confidence_threshold = 0.001
     if probs[pred_class] > confidence_threshold:
         prediction = {
             'class': CLASSES[pred_class],
@@ -119,6 +119,7 @@ def run_pipeline():
         for frame in capture_camera_frames():
             # Step 2: Extract keypoints
             keypoints = handKeypointExtractor.extractKeypoints(frame)
+            frame = keypoints.pop('frame')
             
             # Step 3: Normalize keypoints
             keypoints = handKeypointsNormalizer.relative_to_wrist_normalize(keypoints)
@@ -128,11 +129,12 @@ def run_pipeline():
             analysis_result = analyze_keypoints(keypoints)
             
             # Display results
-            #frame = analysis_result['frame']
-            #cv2.putText(frame, analysis_result['prediction']['text'], 
-            #           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-            #
-            #cv2.imshow("Pipeline Output", frame)
+            cv2.putText(frame, analysis_result['prediction']['text'], 
+                      (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+            
+            cv2.imshow("Pipeline Output", frame)
+            if cv2.waitKey(5) & 0xFF == 27:
+                exit(0)
             
             # Print debugging info
             if analysis_result['prediction']['class'] is not None:

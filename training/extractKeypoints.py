@@ -37,10 +37,10 @@ class HandKeypointsExtractor:
                     frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
         
         # Frame anzeigen
-        cv2.imshow("Hand Gesture Prototype", frame)
-        if cv2.waitKey(5) & 0xFF == 27:  # ESC zum Beenden
-            exit(0)
-        time.sleep(0.01)
+        # cv2.imshow("Hand Gesture Prototype", frame)
+        # if cv2.waitKey(5) & 0xFF == 27:  # ESC zum Beenden
+        #     exit(0)
+        # time.sleep(0.01)
         
         # Keypoints extrahieren
         if results.multi_hand_landmarks and results.multi_handedness:
@@ -59,6 +59,7 @@ class HandKeypointsExtractor:
                     right_hand = np.array(keypoints)
         
         return {
+            'frame': frame,
             'left_hand': left_hand,
             'right_hand': right_hand
         }
