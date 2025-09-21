@@ -5,9 +5,12 @@ from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import os
+import joblib
+from concurrent.futures import ThreadPoolExecutor
+from tqdm import tqdm
 
 class HandGestureClassifier:
-    def __init__(self, identifier="test"):
+    def __init__(self, identifier="default"):
         self.data_directory = Path("datasets/" + identifier + "/")
         self.model = None
         self.label_encoder = LabelEncoder()
@@ -17,33 +20,32 @@ class HandGestureClassifier:
         csv_files = list(self.data_directory.glob("*_dataset.csv"))
         if not csv_files:
             raise ValueError("Keine normalisierten CSV-Dateien gefunden")
-        
+
         all_data = []
         all_labels = []
-        
-        for csv_file in csv_files:
-            # Label aus Dateiname extrahieren (vor "_dataset.csv")
+
+        def process_csv(csv_file):
             label = csv_file.stem.split('_')[0]
-            
             df = pd.read_csv(csv_file)
-            
-            # Alle Frames verwenden
             keypoint_cols = [col for col in df.columns if col != 'id']
-            
-            for _, row in df.iterrows():
-                all_data.append(row[keypoint_cols].values.astype(np.float32))
-                all_labels.append(label)
-        
-        # Zu numpy arrays konvertieren
+            data = [row[keypoint_cols].values.astype(np.float32) for _, row in df.iterrows()]
+            labels = [label] * len(df)
+            return data, labels
+
+        with ThreadPoolExecutor() as executor:
+            results = list(tqdm(executor.map(process_csv, csv_files), total=len(csv_files), desc="CSV-Dateien laden"))
+
+        for data, labels in results:
+            all_data.extend(data)
+            all_labels.extend(labels)
+
         X = np.array(all_data)
         y = np.array(all_labels)
-        
-        # Labels encodieren
         y_encoded = self.label_encoder.fit_transform(y)
-        
+
         print(f"Daten geladen: {len(X)} Samples, {X.shape[1]} Features")
         print(f"Klassen: {list(self.label_encoder.classes_)}")
-        
+
         return X, y_encoded
     
     def create_model(self, input_dim, num_classes):
@@ -84,7 +86,7 @@ class HandGestureClassifier:
         
         # Model Checkpoint
         checkpoint = tf.keras.callbacks.ModelCheckpoint(
-            'models/gesture_model_test2.h5',
+            f'models/gesture_model_{self.data_directory.name}.h5',
             monitor='val_accuracy',
             save_best_only=True,
             verbose=1
@@ -152,8 +154,11 @@ class HandGestureClassifier:
         print(f"Modell geladen: {filepath}")
 
 def main():
+    # Model name configuration
+    model_name = "test3"  # You can change this to any name you want
+    
     # Classifier initialisieren
-    classifier = HandGestureClassifier("test2")
+    classifier = HandGestureClassifier(model_name)
     
     # Modell trainieren
     history = classifier.train(
@@ -163,17 +168,27 @@ def main():
     )
     
     # Modell speichern
-    classifier.save_model("models/gesture_model_test2.h5")
+    classifier.save_model(f"models/gesture_model_{model_name}.h5")
+    joblib.dump(classifier.label_encoder, f"models/label_encoder_{model_name}.pkl")
     
-    print("\\nTraining abgeschlossen!")
+    print("\nTraining abgeschlossen!")
     print("Öffne TensorBoard mit: tensorboard --logdir=logs")
 
 if __name__ == "__main__":
     WORK_DIR = "SilenceAI/training"
     os.chdir(WORK_DIR)
     
+    num_cores = max(1, int(os.cpu_count() // 2))
+    num_cores = os.cpu_count()  # Alternativ alle Kerne nutzen
+    print(f"Verwende {num_cores} CPU-Kerne für TensorFlow")
+    os.environ["OMP_NUM_THREADS"] = str(num_cores)
+    os.environ["TF_NUM_INTRAOP_THREADS"] = str(num_cores)
+    os.environ["TF_NUM_INTEROP_THREADS"] = str(num_cores)
+    
     # TensorFlow Konfiguration
     tf.random.set_seed(42)
+    tf.config.threading.set_intra_op_parallelism_threads(num_cores)
+    tf.config.threading.set_inter_op_parallelism_threads(num_cores)
     
     # GPU falls verfügbar
     if tf.config.list_physical_devices('GPU'):
