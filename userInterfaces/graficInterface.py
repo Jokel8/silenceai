@@ -64,42 +64,42 @@ class UI(Widget):
         
         return texture
 
-    def update_gesture_predictions(self, predictions):
-        """Update the top 3 gesture predictions in the UI
+    def update_gesture_guesses(self, guesses):
+        """Update the top 3 gesture guesses in the UI
         
         Args:
-            predictions: List of tuples [(gesture_name, confidence), ...]
+            guesses: List of tuples [(gesture_name, confidence), ...]
                         sorted by confidence in descending order
         """
         try:
             # Update first prediction
-            if len(predictions) > 0:
-                self.gesture_label_1.text = predictions[0][0]
-                self.gesture_confidence_1.text = f"{predictions[0][1]:.1f}%"
+            if len(guesses) > 0:
+                self.gesture_label_1.text = guesses[0][0]
+                self.gesture_confidence_1.text = f"{guesses[0][1]:.1f}%"
             else:
                 self.gesture_label_1.text = "---"
                 self.gesture_confidence_1.text = "0%"
             
             # Update second prediction
-            if len(predictions) > 1:
-                self.gesture_label_2.text = predictions[1][0]
-                self.gesture_confidence_2.text = f"{predictions[1][1]:.1f}%"
+            if len(guesses) > 1:
+                self.gesture_label_2.text = guesses[1][0]
+                self.gesture_confidence_2.text = f"{guesses[1][1]:.1f}%"
             else:
                 self.gesture_label_2.text = "---"
                 self.gesture_confidence_2.text = "0%"
             
             # Update third prediction
-            if len(predictions) > 2:
-                self.gesture_label_3.text = predictions[2][0]
-                self.gesture_confidence_3.text = f"{predictions[2][1]:.1f}%"
+            if len(guesses) > 2:
+                self.gesture_label_3.text = guesses[2][0]
+                self.gesture_confidence_3.text = f"{guesses[2][1]:.1f}%"
             else:
                 self.gesture_label_3.text = "---"
                 self.gesture_confidence_3.text = "0%"
                 
         except Exception as e:
-            consoleInterface.print_error(f"Error updating gesture predictions: {e}")
+            consoleInterface.print_error(f"Error updating gesture guesses: {e}")
 
-    def clear_gesture_predictions(self):
+    def clear_gesture_guesses(self):
         """Clear all gesture prediction displays"""
         self.gesture_label_1.text = "---"
         self.gesture_confidence_1.text = "0%"
@@ -189,6 +189,24 @@ class MyApp(App):
         self.sp.start(show_preview=False)
         # schedule the UI preview update at ~30Hz for responsive UI (can be lower)
         Clock.schedule_interval(self.root.update_preview_texture, 1.0 / 30.0)
+        Clock.schedule_interval(self.while_running, 0.1)  
+    
+    def while_running(self, dt):
+        """Update gesture guesses while app is running
+        
+        Args:
+            dt: Delta time from Kivy clock (required but unused)
+        """
+        if not hasattr(self, 'root') or not hasattr(self, 'buttonState'):
+            return
+        
+        if self.buttonState.gotGeasture:
+            # Clear old guesses first
+            self.root.clear_gesture_guesses()
+            # Update with new guesses from state
+            self.root.update_gesture_guesses(self.buttonState.guesses)
+            # Reset gesture flag
+            self.buttonState.gotGeasture = False
 
     def on_stop(self):
         # stop stream gracefully
@@ -206,6 +224,7 @@ if __name__ == '__main__':
             self.usePostProcessing = True
             self.useTextToSpeech = True
             self.gotGeasture = False
+            self.guesses = [["", 0.0], ["", 0.0], ["", 0.0]]
 
     state = State()
     MyApp(state).run()

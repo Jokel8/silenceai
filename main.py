@@ -9,6 +9,7 @@ class State():
         self.usePostProcessing = True
         self.useTextToSpeech = True
         self.gotGeasture = False
+        self.guesses = [["", 0.0], ["", 0.0], ["", 0.0]]
 
 def captureLoop(state):    
     consoleInterface.print_status("Starte Verarbeitung...")
