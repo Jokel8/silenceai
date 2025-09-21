@@ -1,6 +1,6 @@
 import threading
 import time
-from userInterfaces import speechInterface, consoleInterface
+from userInterfaces import speechInterface, consoleInterface, graficInterface
 
 class State():
     def __init__(self):
@@ -42,13 +42,17 @@ def analysis(state):
 
 state = State()
   
-consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
-consoleThread.start()
+# consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
+# consoleThread.start()
 
-captureThread = threading.Thread(target=captureLoop, args=(state,))
-captureThread.start()
+graficThread = threading.Thread(target=graficInterface.MyApp, args=(state,))
+graficThread.start()
 
-# Warten, bis der Nebenthread beendet ist
-consoleThread.join()
+# captureThread = threading.Thread(target=captureLoop, args=(state,))
+# captureThread.start()
+
+# # Warten, bis der Nebenthread beendet ist
+# consoleThread.join()
+graficThread.join()
 consoleInterface.print_instruction("SilenceAI wurde beendet")
 exit(0)

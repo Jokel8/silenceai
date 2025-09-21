@@ -1,0 +1,133 @@
+# uiDesign.kv
+#:import utils kivy.utils
+
+<UI>:
+    toggle_preprocessing_btn: toggle_preprocessing_btn
+    preview_image: preview_image
+
+    BoxLayout:
+        orientation: 'vertical'
+        size: root.width, root.height
+        padding: 20
+        spacing: 20
+
+        BoxLayout:
+            size_hint: (1, 0.25)
+            orientation: 'horizontal'
+            padding: 20
+            spacing: 20
+
+            ToggleButton:
+                id: toggle_preprocessing_btn
+                text: "use Preprocessing"
+                state: 'down'
+                on_state: root.toggle_preprocessing(self)
+
+            ToggleButton:
+                text: "use Postprocessing"
+                state: 'down'
+
+            ToggleButton:
+                text: "Boxing 1"
+                state: 'down'
+
+            ToggleButton:
+                text: "Boxing 2"
+                state: 'down'
+
+            ToggleButton:
+                text: "Boxing 3"
+                state: 'down'
+
+            ToggleButton:
+                text: "use text to Speech"
+                state: 'down'
+
+        # Replaced the single button with the live preview image
+        Image:
+            id: preview_image
+            size_hint: (1, 0.4)
+            allow_stretch: True
+            keep_ratio: True
+            source: ''  # initially empty; texture will be set by ui.py
+
+        BoxLayout:
+            orientation: 'horizontal'
+            spacing: 10
+            size_hint: (1, 0.25)
+
+            ToggleButton:
+                text: "use Video to text"
+                state: 'down'
+                size_hint: (0.1, 1)
+
+            Button:
+                text: "Boxing 7"
+
+
+
+
+
+
+
+
+
+
+# #:import utils kivy.utils
+
+# <UI>
+#     toggle_preprocessing_btn:toggle_preprocessing_btn
+
+#     BoxLayout:
+#         orientation: 'vertical'
+#         size: root.width, root.height
+
+#         padding: 20  # Padding around the layout
+#         spacing: 20 # Space between buttons
+
+#         BoxLayout:
+#             size_hint: (1, 0.25)
+#             orientation: 'horizontal'
+#             size: root.width, root.height
+
+#             padding: 20  # Padding around the layout
+#             spacing: 20 # Space between buttons
+            
+#             ToggleButton:
+#                 text: "use Preprocessing"
+#                 state: 'down'
+#                 on_press: root.toggle_preprocessing(toggle_preprocessing_btn)
+
+#             ToggleButton:
+#                 text: "use Postprocessing"
+#                 state: 'down'
+
+#             ToggleButton:
+#                 text: "Boxing 1"
+#                 state: 'down'
+            
+#             ToggleButton:
+#                 text: "Boxing 2"
+#                 state: 'down'
+
+#             ToggleButton:
+#                 text: "Boxing 3"
+#                 state: 'down'
+            
+#             ToggleButton:
+#                 text: "use text to Speech"
+#                 state: 'down'
+#         Button:
+#             text: "Boxing 5"
+#         BoxLayout:
+#             orientation: 'horizontal'
+#             spacing: 10
+#             size_hint: (1, 0.25)
+            
+            
+#             ToggleButton:
+#                 text: "use Video to text"
+#                 state: 'down'
+#                 size_hint: (0.1, 1)
+#             Button:
+#                 text: "Boxing 7"

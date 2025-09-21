@@ -1,4 +1,4 @@
-from stream_processor import StreamProcessor
+from userInterfaces.UI.stream_processor import StreamProcessor
 import time
 
 sp = StreamProcessor(ai_out_dir="preprocessing/out", ai_w=210, ai_h=300, target_fps=25.0)
