@@ -15,7 +15,16 @@ import numpy as np
 import mediapipe as mp
 import threading, queue, os, time
 from typing import Optional
-from preprocessing import Preprocessing as prepro
+import importlib.util
+
+try:
+    from preprocessing import Preprocessing as prepro
+except ImportError:
+    preprozessing_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'userInterfaces'))
+    spec = importlib.util.spec_from_file_location("stream_processor", os.path.join(preprozessing_dir, "preprocessing.py"))
+    preprocessing_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(preprocessing_module)
+    strproc = preprocessing_module.Preprocessing
 
 # ------------------- Defaults / Config -------------------
 DEFAULT_AI_W = 210
@@ -67,7 +76,7 @@ class StreamProcessor:
         self._brightness = 1.0
 
         self.state = state
-    # ------------------- AI saver worker // Jonas Schnittstelle pipline -------------------
+    # ------------------- Schnittstelle pipline -------------------
     def _ai_saver_worker(self, stop_event):
         idx = 0
         while not stop_event.is_set() or not self.ai_q.empty():
