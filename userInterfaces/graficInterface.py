@@ -21,16 +21,54 @@ except ImportError:
 
 
 class UI(Widget):
-    def __init__(self, buttonState):
-        super(UI, self).__init__()
-        self.buttonState = buttonState
-    
 
     # preview image widget (Image in kv)
     preview_image = ObjectProperty(None)
 
+
+
+
+    def __init__(self, buttonState):
+        super(UI, self).__init__()
+        self.buttonState = buttonState
+
     # runtime object: StreamProcessor instance (set by App)
     stream_proc = None
+
+    def _create_gradient(self):
+        #"""Create a gradient texture for the background"""
+
+        
+        # Create texture
+        texture = Texture.create(size=(1, 256), colorfmt='rgba')
+        
+        # Create gradient data - from blue to dark purple/black
+        buf = []
+        for i in range(256):
+            # Gradient from blue (top) to dark (bottom)
+            ratio = i / 255.0
+            
+            # Start color (blue) - kannst du anpassen
+            r1, g1, b1 = 0.0, 0.0, 0.3  # Dunkles Blau
+            
+            # End color (very dark purple/black)
+            r2, g2, b2 = 0.02, 0.0, 0.05  # Fast schwarz mit leichtem Lila-Stich
+            
+            # Interpolate
+            r = r1 + (r2 - r1) * ratio
+            g = g1 + (g2 - g1) * ratio
+            b = b1 + (b2 - b1) * ratio
+            
+            # Convert to bytes
+            buf.extend([int(r * 255), int(g * 255), int(b * 255), 255])
+        
+        # Apply to texture
+        buf = bytes(buf)
+        texture.blit_buffer(buf, colorfmt='rgba', bufferfmt='ubyte')
+        
+        return texture
+    
+    
 
     def toggle_preprocessing(self, instance):
         # instance is the ToggleButton — check instance.state ('down' or 'normal')

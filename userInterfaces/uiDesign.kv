@@ -1,60 +1,421 @@
 # uiDesign.kv
 #:import utils kivy.utils
+#:import Factory kivy.factory.Factory
+
+# Custom 3D Button with gradient and shadow effect
+<Custom3DButton@ToggleButton>:
+    canvas.before:
+        # Shadow
+        Color:
+            rgba: 0, 0, 0, 0.3 if self.state == 'normal' else 0.5
+        RoundedRectangle:
+            pos: self.x + 3, self.y - 3
+            size: self.size
+            radius: [15,]
+        
+        # Gradient background
+        Color:
+            rgba: (0.2, 0.3, 0.8, 1) if self.state == 'normal' else (0.1, 0.8, 0.4, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [15,]
+        
+        # Top highlight for 3D effect
+        Color:
+            rgba: 1, 1, 1, 0.1
+        RoundedRectangle:
+            pos: self.x, self.y + self.height * 0.7
+            size: self.width, self.height * 0.3
+            radius: [15, 15, 0, 0]
+        
+        # Inner border glow
+        Color:
+            rgba: (0.4, 0.5, 1, 0.3) if self.state == 'normal' else (0.2, 1, 0.5, 0.5)
+        Line:
+            width: 2
+            rounded_rectangle: self.x + 2, self.y + 2, self.width - 4, self.height - 4, 13
+    
+    color: 1, 1, 1, 1
+    bold: True
+    font_size: '14sp'
+    
+    # Animation on press
+    on_press:
+        self.opacity = 0.8
+    on_release:
+        self.opacity = 1.0
+
+# Custom Slider with modern design
+<ModernSlider@Slider>:
+    canvas.before:
+        # Track background
+        Color:
+            rgba: 0.1, 0.15, 0.3, 0.8
+        RoundedRectangle:
+            pos: self.x, self.center_y - 6
+            size: self.width, 12
+            radius: [6,]
+        
+        # Active track
+        Color:
+            rgba: 0.3, 0.5, 0.9, 1
+        RoundedRectangle:
+            pos: self.x, self.center_y - 4
+            size: self.value_normalized * self.width, 8
+            radius: [4,]
+    
+    cursor_size: 20, 20
+    cursor_image: ''
+    canvas.after:
+        # Custom cursor
+        Color:
+            rgba: 0.4, 0.6, 1, 1
+        Ellipse:
+            pos: self.value_pos[0] - 10, self.value_pos[1] - 10
+            size: 20, 20
+        Color:
+            rgba: 1, 1, 1, 0.8
+        Ellipse:
+            pos: self.value_pos[0] - 6, self.value_pos[1] - 6
+            size: 12, 12
 
 <UI>:
     preview_image: preview_image
-
+    
+    canvas.before:
+        # Gradient background from blue to dark purple/black
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            texture: root._create_gradient()
+    
     BoxLayout:
         orientation: 'vertical'
         size: root.width, root.height
-        padding: 20
+        padding: 25
         spacing: 20
-
+        
+        # Title Bar
         BoxLayout:
-            size_hint: (1, 0.025)
-            orientation: 'horizontal'
-            padding: 20
-            spacing: 20
+            size_hint: (1, 0.08)
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.15, 0.3, 0.7
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [15,]
+                Color:
+                    rgba: 0.3, 0.5, 1, 0.2
+                Line:
+                    width: 1.5
+                    rounded_rectangle: self.x, self.y, self.width, self.height, 15
+            
+            Label:
+                text: "Gesture Recognition - Stream Processing Control"
+                font_size: '22sp'
+                bold: True
+                color: 0.9, 0.95, 1, 1
+        
+        # Control Panel Section
+        BoxLayout:
+            size_hint: (1, 0.15)
+            orientation: 'vertical'
+            spacing: 10
+            
+            # Main Processing Controls
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: 15
+                size_hint: (1, 0.5)
+                
+                Custom3DButton:
+                    id: toggle_preprocessing_btn
+                    text: "Preprocessing"
+                    state: 'down'
+                    on_state: root.toggle_preprocessing(self)
+                
+                Custom3DButton:
+                    text: "Postprocessing"
+                    state: 'down'
+                    on_state: root.toggle_postprocessing(self)
+                
+                Custom3DButton:
+                    text: "Text to Speech"
+                    state: 'down'
+                    on_state: root.toggle_TextToSpeech(self)
+            
+            # Image Settings Controls
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: 15
+                size_hint: (1, 0.5)
+                padding: [10, 0]
+                canvas.before:
+                    Color:
+                        rgba: 0.08, 0.12, 0.25, 0.5
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [10,]
+                
+                # Brightness Control
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: 10
+                    
+                    Label:
+                        text: "Brightness"
+                        size_hint: (0.3, 1)
+                        color: 0.7, 0.85, 1, 1
+                        font_size: '13sp'
+                    
+                    ModernSlider:
+                        id: brightness_slider
+                        min: -50
+                        max: 50
+                        value: 0
+                        size_hint: (0.6, 1)
+                    
+                    Label:
+                        text: str(int(brightness_slider.value))
+                        size_hint: (0.1, 1)
+                        color: 0.8, 0.9, 1, 1
+                        font_size: '12sp'
+                
+                # Contrast Control
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: 10
+                    
+                    Label:
+                        text: "Contrast"
+                        size_hint: (0.3, 1)
+                        color: 0.7, 0.85, 1, 1
+                        font_size: '13sp'
+                    
+                    ModernSlider:
+                        id: contrast_slider
+                        min: 0.5
+                        max: 2.0
+                        value: 1.0
+                        size_hint: (0.6, 1)
+                    
+                    Label:
+                        text: "{:.1f}".format(contrast_slider.value)
+                        size_hint: (0.1, 1)
+                        color: 0.8, 0.9, 1, 1
+                        font_size: '12sp'
+                
+                # Saturation Control
+                BoxLayout:
+                    orientation: 'horizontal'
+                    spacing: 10
+                    
+                    Label:
+                        text: "Saturation"
+                        size_hint: (0.3, 1)
+                        color: 0.7, 0.85, 1, 1
+                        font_size: '13sp'
+                    
+                    ModernSlider:
+                        id: saturation_slider
+                        min: 0
+                        max: 2.0
+                        value: 1.0
+                        size_hint: (0.6, 1)
+                    
+                    Label:
+                        text: "{:.1f}".format(saturation_slider.value)
+                        size_hint: (0.1, 1)
+                        color: 0.8, 0.9, 1, 1
+                        font_size: '12sp'
+        
+        # Main Preview Section
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: (1, 0.55)
+            spacing: 10
+            
+            # Preview Label
+            Label:
+                text: "Live Webcam Feed"
+                size_hint: (1, 0.08)
+                font_size: '18sp'
+                bold: True
+                color: 0.8, 0.9, 1, 1
+            
+            # Preview Frame Container
+            BoxLayout:
+                padding: 5
+                canvas.before:
+                    # Outer glow effect
+                    Color:
+                        rgba: 0.15, 0.3, 0.7, 0.3
+                    RoundedRectangle:
+                        pos: self.x - 8, self.y - 8
+                        size: self.width + 16, self.height + 16
+                        radius: [25,]
+                    
+                    # Main frame background
+                    Color:
+                        rgba: 0.05, 0.08, 0.15, 0.9
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [20,]
+                    
+                    # Inner border
+                    Color:
+                        rgba: 0.25, 0.4, 0.8, 0.5
+                    Line:
+                        width: 2
+                        rounded_rectangle: self.x + 2, self.y + 2, self.width - 4, self.height - 4, 18
+                
+                Image:
+                    id: preview_image
+                    allow_stretch: True
+                    keep_ratio: True
+                    source: ''
+                    canvas.after:
+                        # Recording indicator (top-right corner)
+                        Color:
+                            rgba: 1, 0.2, 0.2, 0.8
+                        Ellipse:
+                            pos: self.right - 30, self.top - 30
+                            size: 15, 15
+                        Color:
+                            rgba: 1, 1, 1, 0.9
+                        Ellipse:
+                            pos: self.right - 27, self.top - 27
+                            size: 9, 9
+        
+        # Output Section - Gesture Text Display
+        BoxLayout:
+            size_hint: (1, 0.22)
+            orientation: 'vertical'
+            spacing: 5
+            
+            # Output Header
+            BoxLayout:
+                size_hint: (1, 0.15)
+                
+                Label:
+                    text: "Gesture Recognition Output"
+                    font_size: '16sp'
+                    bold: True
+                    color: 0.8, 0.9, 1, 1
+                    halign: 'left'
+                    text_size: self.size
+                    padding: [10, 0]
+                
+                Label:
+                    text: "Status: Processing..."
+                    font_size: '12sp'
+                    color: 0.4, 0.8, 0.5, 1
+                    halign: 'right'
+                    text_size: self.size
+                    padding: [0, 0, 10, 0]
+            
+            # Output Text Area
+            ScrollView:
+                canvas.before:
+                    # Background
+                    Color:
+                        rgba: 0.03, 0.05, 0.12, 0.95
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [12,]
+                    # Border
+                    Color:
+                        rgba: 0.2, 0.35, 0.7, 0.4
+                    Line:
+                        width: 1.5
+                        rounded_rectangle: self.x + 1, self.y + 1, self.width - 2, self.height - 2, 11
+                
+                TextInput:
+                    size_hint_y: None
+                    height: max(self.minimum_height, self.parent.height)
+                    text: "System initialized. Waiting for gesture input...\n"
+                    readonly: True
+                    background_color: 0, 0, 0, 0
+                    foreground_color: 0.6, 0.85, 1, 0.95
+                    #font_name: 'DroidSansMono' if platform == 'android' else 'Courier'
+                    font_size: '13sp'
+                    padding: [15, 10]
+                    
+<Widget>:
+    # Method to create gradient texture
+    create_gradient: self._create_gradient() if hasattr(self, '_create_gradient') else None
 
-            ToggleButton:
-                id: toggle_preprocessing_btn
-                text: "use Preprocessing"
-                state: 'down'
-                on_state: root.toggle_preprocessing(self)
 
-            ToggleButton:
-                text: "use Postprocessing"
-                state: 'down'
-                on_state: root.toggle_postprocessing(self)
 
-            ToggleButton:
-                text: "Boxing 1"
-                state: 'down'
 
-            ToggleButton:
-                text: "Boxing 2"
-                state: 'down'
 
-            ToggleButton:
-                text: "Boxing 3"
-                state: 'down'
 
-            ToggleButton:
-                text: "use text to Speech"
-                state: 'down'
-                on_state: root.toggle_TextToSpeech(self)
 
-        # Replaced the single button with the live preview image
-        Image:
-            id: preview_image
-            size_hint: (1, 0.4)
-            allow_stretch: True
-            keep_ratio: True
-            source: ''  # initially empty; texture will be set by ui.py
 
-        Label:
-            text: "Output"
-            size_hint: (1, 0.1)
+
+
+# # uiDesign.kv
+# #:import utils kivy.utils
+
+# <UI>:
+#     preview_image: preview_image
+
+#     BoxLayout:
+#         orientation: 'vertical'
+#         size: root.width, root.height
+#         padding: 20
+#         spacing: 20
+
+#         BoxLayout:
+#             size_hint: (1, 0.1)
+#             orientation: 'horizontal'
+#             padding: 20
+#             spacing: 20
+
+#             ToggleButton:
+#                 id: toggle_preprocessing_btn
+#                 text: "use Preprocessing"
+#                 state: 'down'
+#                 on_state: root.toggle_preprocessing(self)
+
+#             ToggleButton:
+#                 text: "use Postprocessing"
+#                 state: 'down'
+#                 on_state: root.toggle_postprocessing(self)
+
+#             ToggleButton:
+#                 text: "Boxing 1"
+#                 state: 'down'
+
+#             ToggleButton:
+#                 text: "Boxing 2"
+#                 state: 'down'
+
+#             ToggleButton:
+#                 text: "Boxing 3"
+#                 state: 'down'
+
+#             ToggleButton:
+#                 text: "use text to Speech"
+#                 state: 'down'
+#                 on_state: root.toggle_TextToSpeech(self)
+
+#         # Replaced the single button with the live preview image
+#         Image:
+#             id: preview_image
+#             size_hint: (1, 0.4)
+#             allow_stretch: True
+#             keep_ratio: True
+#             source: ''  # initially empty; texture will be set by ui.py
+
+#         Label:
+#             text: "Output"
+#             size_hint: (1, 0.1)
 
         
 
