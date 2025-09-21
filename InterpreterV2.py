@@ -117,9 +117,9 @@ def _first_sentence(text: str) -> str:
 
 def interpret_gloss(
     gloss: str,
-    hf_model: str = "Qwen/Qwen2.5-7-B-Instruct",
+    hf_model: str = "google/gemma-3-270m-it",
     max_tokens: int = 64,
-    hf_token: Optional[str] = None,
+    hf_token: Optional[str] = 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,
 ) -> str:
     """
     Gloss (ALL CAPS) -> deutscher Satz (Hugging Face Transformers).
@@ -198,3 +198,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
