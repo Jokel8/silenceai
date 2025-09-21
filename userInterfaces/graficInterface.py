@@ -25,9 +25,6 @@ class UI(Widget):
     # preview image widget (Image in kv)
     preview_image = ObjectProperty(None)
 
-
-
-
     def __init__(self, buttonState):
         super(UI, self).__init__()
         self.buttonState = buttonState
@@ -37,7 +34,6 @@ class UI(Widget):
 
     def _create_gradient(self):
         #"""Create a gradient texture for the background"""
-
         
         # Create texture
         texture = Texture.create(size=(1, 256), colorfmt='rgba')
@@ -67,6 +63,50 @@ class UI(Widget):
         texture.blit_buffer(buf, colorfmt='rgba', bufferfmt='ubyte')
         
         return texture
+
+    def update_gesture_predictions(self, predictions):
+        """Update the top 3 gesture predictions in the UI
+        
+        Args:
+            predictions: List of tuples [(gesture_name, confidence), ...]
+                        sorted by confidence in descending order
+        """
+        try:
+            # Update first prediction
+            if len(predictions) > 0:
+                self.gesture_label_1.text = predictions[0][0]
+                self.gesture_confidence_1.text = f"{predictions[0][1]:.1f}%"
+            else:
+                self.gesture_label_1.text = "---"
+                self.gesture_confidence_1.text = "0%"
+            
+            # Update second prediction
+            if len(predictions) > 1:
+                self.gesture_label_2.text = predictions[1][0]
+                self.gesture_confidence_2.text = f"{predictions[1][1]:.1f}%"
+            else:
+                self.gesture_label_2.text = "---"
+                self.gesture_confidence_2.text = "0%"
+            
+            # Update third prediction
+            if len(predictions) > 2:
+                self.gesture_label_3.text = predictions[2][0]
+                self.gesture_confidence_3.text = f"{predictions[2][1]:.1f}%"
+            else:
+                self.gesture_label_3.text = "---"
+                self.gesture_confidence_3.text = "0%"
+                
+        except Exception as e:
+            consoleInterface.print_error(f"Error updating gesture predictions: {e}")
+
+    def clear_gesture_predictions(self):
+        """Clear all gesture prediction displays"""
+        self.gesture_label_1.text = "---"
+        self.gesture_confidence_1.text = "0%"
+        self.gesture_label_2.text = "---"
+        self.gesture_confidence_2.text = "0%"
+        self.gesture_label_3.text = "---"
+        self.gesture_confidence_3.text = "0%"
     
     
 

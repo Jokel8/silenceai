@@ -46,49 +46,42 @@
     on_release:
         self.opacity = 1.0
 
-# Custom Slider with modern design
-<ModernSlider@Slider>:
+# Gesture Recognition Box
+<GestureBox@BoxLayout>:
+    orientation: 'vertical'
+    padding: 10
+    spacing: 5
     canvas.before:
-        # Track background
+        # Background with gradient
         Color:
-            rgba: 0.1, 0.15, 0.3, 0.8
+            rgba: 0.08, 0.12, 0.25, 0.8
         RoundedRectangle:
-            pos: self.x, self.center_y - 6
-            size: self.width, 12
-            radius: [6,]
+            pos: self.pos
+            size: self.size
+            radius: [15,]
         
-        # Active track
+        # Border glow
         Color:
-            rgba: 0.3, 0.5, 0.9, 1
-        RoundedRectangle:
-            pos: self.x, self.center_y - 4
-            size: self.value_normalized * self.width, 8
-            radius: [4,]
-    
-    cursor_size: 20, 20
-    cursor_image: ''
-    canvas.after:
-        # Custom cursor
-        Color:
-            rgba: 0.4, 0.6, 1, 1
-        Ellipse:
-            pos: self.value_pos[0] - 10, self.value_pos[1] - 10
-            size: 20, 20
-        Color:
-            rgba: 1, 1, 1, 0.8
-        Ellipse:
-            pos: self.value_pos[0] - 6, self.value_pos[1] - 6
-            size: 12, 12
+            rgba: 0.3, 0.5, 0.9, 0.4
+        Line:
+            width: 2
+            rounded_rectangle: self.x + 1, self.y + 1, self.width - 2, self.height - 2, 14
 
 <UI>:
     preview_image: preview_image
+    gesture_label_1: gesture_label_1
+    gesture_confidence_1: gesture_confidence_1
+    gesture_label_2: gesture_label_2
+    gesture_confidence_2: gesture_confidence_2
+    gesture_label_3: gesture_label_3
+    gesture_confidence_3: gesture_confidence_3
     
     canvas.before:
         # Gradient background from blue to dark purple/black
         Rectangle:
             pos: self.pos
             size: self.size
-            texture: root._create_gradient()
+            texture: self._create_gradient()
     
     BoxLayout:
         orientation: 'vertical'
@@ -113,129 +106,37 @@
                     rounded_rectangle: self.x, self.y, self.width, self.height, 15
             
             Label:
-                text: "Gesture Recognition - Stream Processing Control"
+                text: "Gesture Recognition"
                 font_size: '22sp'
                 bold: True
                 color: 0.9, 0.95, 1, 1
         
         # Control Panel Section
         BoxLayout:
-            size_hint: (1, 0.15)
-            orientation: 'vertical'
-            spacing: 10
+            size_hint: (1, 0.1)
+            orientation: 'horizontal'
+            spacing: 15
             
-            # Main Processing Controls
-            BoxLayout:
-                orientation: 'horizontal'
-                spacing: 15
-                size_hint: (1, 0.5)
-                
-                Custom3DButton:
-                    id: toggle_preprocessing_btn
-                    text: "Preprocessing"
-                    state: 'down'
-                    on_state: root.toggle_preprocessing(self)
-                
-                Custom3DButton:
-                    text: "Postprocessing"
-                    state: 'down'
-                    on_state: root.toggle_postprocessing(self)
-                
-                Custom3DButton:
-                    text: "Text to Speech"
-                    state: 'down'
-                    on_state: root.toggle_TextToSpeech(self)
+            Custom3DButton:
+                id: toggle_preprocessing_btn
+                text: "Preprocessing"
+                state: 'down'
+                on_state: root.toggle_preprocessing(self)
             
-            # Image Settings Controls
-            BoxLayout:
-                orientation: 'horizontal'
-                spacing: 15
-                size_hint: (1, 0.5)
-                padding: [10, 0]
-                canvas.before:
-                    Color:
-                        rgba: 0.08, 0.12, 0.25, 0.5
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [10,]
-                
-                # Brightness Control
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: 10
-                    
-                    Label:
-                        text: "Brightness"
-                        size_hint: (0.3, 1)
-                        color: 0.7, 0.85, 1, 1
-                        font_size: '13sp'
-                    
-                    ModernSlider:
-                        id: brightness_slider
-                        min: -50
-                        max: 50
-                        value: 0
-                        size_hint: (0.6, 1)
-                    
-                    Label:
-                        text: str(int(brightness_slider.value))
-                        size_hint: (0.1, 1)
-                        color: 0.8, 0.9, 1, 1
-                        font_size: '12sp'
-                
-                # Contrast Control
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: 10
-                    
-                    Label:
-                        text: "Contrast"
-                        size_hint: (0.3, 1)
-                        color: 0.7, 0.85, 1, 1
-                        font_size: '13sp'
-                    
-                    ModernSlider:
-                        id: contrast_slider
-                        min: 0.5
-                        max: 2.0
-                        value: 1.0
-                        size_hint: (0.6, 1)
-                    
-                    Label:
-                        text: "{:.1f}".format(contrast_slider.value)
-                        size_hint: (0.1, 1)
-                        color: 0.8, 0.9, 1, 1
-                        font_size: '12sp'
-                
-                # Saturation Control
-                BoxLayout:
-                    orientation: 'horizontal'
-                    spacing: 10
-                    
-                    Label:
-                        text: "Saturation"
-                        size_hint: (0.3, 1)
-                        color: 0.7, 0.85, 1, 1
-                        font_size: '13sp'
-                    
-                    ModernSlider:
-                        id: saturation_slider
-                        min: 0
-                        max: 2.0
-                        value: 1.0
-                        size_hint: (0.6, 1)
-                    
-                    Label:
-                        text: "{:.1f}".format(saturation_slider.value)
-                        size_hint: (0.1, 1)
-                        color: 0.8, 0.9, 1, 1
-                        font_size: '12sp'
+            Custom3DButton:
+                text: "Postprocessing"
+                state: 'down'
+                on_state: root.toggle_postprocessing(self)
+            
+            Custom3DButton:
+                text: "Text to Speech"
+                state: 'down'
+                on_state: root.toggle_TextToSpeech(self)
         
         # Main Preview Section
         BoxLayout:
             orientation: 'vertical'
-            size_hint: (1, 0.55)
+            size_hint: (1, 0.45)
             spacing: 10
             
             # Preview Label
@@ -290,6 +191,104 @@
                         Ellipse:
                             pos: self.right - 27, self.top - 27
                             size: 9, 9
+        
+        # Gesture Recognition Results Section
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint: (1, 0.15)
+            spacing: 10
+            
+            # Section Header
+            Label:
+                text: "Detected Gestures - Top 3 Predictions"
+                size_hint: (1, 0.25)
+                font_size: '16sp'
+                bold: True
+                color: 0.7, 0.85, 1, 1
+            
+            # Three Gesture Boxes
+            BoxLayout:
+                orientation: 'horizontal'
+                spacing: 15
+                size_hint: (1, 0.75)
+                
+                # Gesture Box 1 - Highest Confidence
+                GestureBox:
+                    canvas.before:
+                        # Highlight for best match
+                        Color:
+                            rgba: 0.2, 0.8, 0.4, 0.15
+                        RoundedRectangle:
+                            pos: self.x - 2, self.y - 2
+                            size: self.width + 4, self.height + 4
+                            radius: [17,]
+                    
+                    Label:
+                        text: "1st Match"
+                        size_hint: (1, 0.25)
+                        font_size: '12sp'
+                        color: 0.5, 0.7, 0.9, 0.8
+                    
+                    Label:
+                        id: gesture_label_1
+                        text: "---"
+                        size_hint: (1, 0.45)
+                        font_size: '20sp'
+                        bold: True
+                        color: 0.3, 1, 0.5, 1
+                    
+                    Label:
+                        id: gesture_confidence_1
+                        text: "0%"
+                        size_hint: (1, 0.3)
+                        font_size: '14sp'
+                        color: 0.7, 0.85, 1, 1
+                
+                # Gesture Box 2 - Second Confidence
+                GestureBox:
+                    Label:
+                        text: "2nd Match"
+                        size_hint: (1, 0.25)
+                        font_size: '12sp'
+                        color: 0.5, 0.7, 0.9, 0.8
+                    
+                    Label:
+                        id: gesture_label_2
+                        text: "---"
+                        size_hint: (1, 0.45)
+                        font_size: '18sp'
+                        bold: True
+                        color: 0.8, 0.9, 0.3, 1
+                    
+                    Label:
+                        id: gesture_confidence_2
+                        text: "0%"
+                        size_hint: (1, 0.3)
+                        font_size: '14sp'
+                        color: 0.7, 0.85, 1, 1
+                
+                # Gesture Box 3 - Third Confidence
+                GestureBox:
+                    Label:
+                        text: "3rd Match"
+                        size_hint: (1, 0.25)
+                        font_size: '12sp'
+                        color: 0.5, 0.7, 0.9, 0.8
+                    
+                    Label:
+                        id: gesture_label_3
+                        text: "---"
+                        size_hint: (1, 0.45)
+                        font_size: '16sp'
+                        bold: True
+                        color: 0.9, 0.6, 0.3, 1
+                    
+                    Label:
+                        id: gesture_confidence_3
+                        text: "0%"
+                        size_hint: (1, 0.3)
+                        font_size: '14sp'
+                        color: 0.7, 0.85, 1, 1
         
         # Output Section - Gesture Text Display
         BoxLayout:
@@ -358,7 +357,7 @@
 
 
 
-
+# old version:
 # # uiDesign.kv
 # #:import utils kivy.utils
 
@@ -416,72 +415,3 @@
 #         Label:
 #             text: "Output"
 #             size_hint: (1, 0.1)
-
-        
-
-
-
-
-
-
-
-
-
-# #:import utils kivy.utils
-
-# <UI>
-#     toggle_preprocessing_btn:toggle_preprocessing_btn
-
-#     BoxLayout:
-#         orientation: 'vertical'
-#         size: root.width, root.height
-
-#         padding: 20  # Padding around the layout
-#         spacing: 20 # Space between buttons
-
-#         BoxLayout:
-#             size_hint: (1, 0.25)
-#             orientation: 'horizontal'
-#             size: root.width, root.height
-
-#             padding: 20  # Padding around the layout
-#             spacing: 20 # Space between buttons
-            
-#             ToggleButton:
-#                 text: "use Preprocessing"
-#                 state: 'down'
-#                 on_press: root.toggle_preprocessing(toggle_preprocessing_btn)
-
-#             ToggleButton:
-#                 text: "use Postprocessing"
-#                 state: 'down'
-
-#             ToggleButton:
-#                 text: "Boxing 1"
-#                 state: 'down'
-            
-#             ToggleButton:
-#                 text: "Boxing 2"
-#                 state: 'down'
-
-#             ToggleButton:
-#                 text: "Boxing 3"
-#                 state: 'down'
-            
-#             ToggleButton:
-#                 text: "use text to Speech"
-#                 state: 'down'
-#         Button:
-#             text: "Boxing 5"
-#         BoxLayout:
-#             orientation: 'horizontal'
-#             spacing: 10
-#             size_hint: (1, 0.25)
-            
-            
-#             ToggleButton:
-#                 text: "use Video to text"
-#                 state: 'down'
-#                 size_hint: (0.1, 1)
-#             Button:
-#                 text: "Boxing 7"
