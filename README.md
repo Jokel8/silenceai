@@ -13,3 +13,12 @@ Gebärdensprache ist eine komplexe und ausdrucksstarke Kommunikationsform, die f
 3.  Gebärdenerkennung durch ein eigenes Modell mit den RWTH Datensätzen @Jonas
 4.  Post-Processing (Grammatikalische Korrektur und ggf. einfügen von Präpositionen) mit Qwen2 0.5B Parameter @Kende
 5.  Sprachausgabe
+
+Einfachster Test:
+- training/testing.py
+
+Mit Sprachausgabe etc:
+- training/Pipeline.py
+
+Alles theoretisch:
+- main.py
