@@ -1,6 +1,6 @@
 import threading
 import time
-from userInterfaces import speechInterface, consoleInterface
+from userInterfaces import speechInterface, consoleInterface, graficInterface
 
 class State():
     def __init__(self):
@@ -45,8 +45,11 @@ state = State()
 consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
 consoleThread.start()
 
-captureThread = threading.Thread(target=captureLoop, args=(state,))
-captureThread.start()
+app = graficInterface.MyApp(state)
+app.run()
+
+# captureThread = threading.Thread(target=captureLoop, args=(state,))
+# captureThread.start()
 
 # Warten, bis der Nebenthread beendet ist
 consoleThread.join()

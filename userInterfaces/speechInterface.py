@@ -1,6 +1,6 @@
 import pyttsx3
 import sys
-import consoleInterface
+from userInterfaces import consoleInterface
 
 
 def say(text):
