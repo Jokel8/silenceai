@@ -1,0 +1,8 @@
+*
+!.gitignore
+
+!gesture_model_phoenix1.h5
+!gesture_model_phoenix2.h5
+
+!label_encoders_phoenix.h5
+!label_encoders_phoenix2.h5
