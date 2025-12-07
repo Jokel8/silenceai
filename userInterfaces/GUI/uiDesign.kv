@@ -106,7 +106,7 @@
                     rounded_rectangle: self.x, self.y, self.width, self.height, 15
             
             Label:
-                text: "Gesture Recognition"
+                text: "Gesture Recognition System"
                 font_size: '22sp'
                 bold: True
                 color: 0.9, 0.95, 1, 1
@@ -117,11 +117,27 @@
             orientation: 'horizontal'
             spacing: 15
             
-            Custom3DButton:
-                id: toggle_preprocessing_btn
-                text: "Preprocessing"
-                state: 'down'
-                on_state: root.toggle_preprocessing(self)
+            # Preprocessing Dropdown Button
+            Button:
+                id: preprocessing_dropdown_btn
+                text: "Preprocessing Settings"
+                background_color: 0, 0, 0, 0
+                canvas.before:
+                    Color:
+                        rgba: (0.2, 0.3, 0.8, 1)
+                    RoundedRectangle:
+                        pos: self.pos
+                        size: self.size
+                        radius: [15,]
+                    Color:
+                        rgba: (0.4, 0.5, 1, 0.3)
+                    Line:
+                        width: 2
+                        rounded_rectangle: self.x + 2, self.y + 2, self.width - 4, self.height - 4, 13
+                color: 1, 1, 1, 1
+                bold: True
+                font_size: '14sp'
+                on_release: root.toggle_preprocessing_dropdown(self)
             
             Custom3DButton:
                 text: "Postprocessing"
@@ -341,77 +357,5 @@
                     readonly: True
                     background_color: 0, 0, 0, 0
                     foreground_color: 0.6, 0.85, 1, 0.95
-                    #font_name: 'DroidSansMono' if platform == 'android' else 'Courier'
                     font_size: '13sp'
                     padding: [15, 10]
-                    
-<Widget>:
-    # Method to create gradient texture
-    create_gradient: self._create_gradient() if hasattr(self, '_create_gradient') else None
-
-
-
-
-
-
-
-
-
-# old version:
-# # uiDesign.kv
-# #:import utils kivy.utils
-
-# <UI>:
-#     preview_image: preview_image
-
-#     BoxLayout:
-#         orientation: 'vertical'
-#         size: root.width, root.height
-#         padding: 20
-#         spacing: 20
-
-#         BoxLayout:
-#             size_hint: (1, 0.1)
-#             orientation: 'horizontal'
-#             padding: 20
-#             spacing: 20
-
-#             ToggleButton:
-#                 id: toggle_preprocessing_btn
-#                 text: "use Preprocessing"
-#                 state: 'down'
-#                 on_state: root.toggle_preprocessing(self)
-
-#             ToggleButton:
-#                 text: "use Postprocessing"
-#                 state: 'down'
-#                 on_state: root.toggle_postprocessing(self)
-
-#             ToggleButton:
-#                 text: "Boxing 1"
-#                 state: 'down'
-
-#             ToggleButton:
-#                 text: "Boxing 2"
-#                 state: 'down'
-
-#             ToggleButton:
-#                 text: "Boxing 3"
-#                 state: 'down'
-
-#             ToggleButton:
-#                 text: "use text to Speech"
-#                 state: 'down'
-#                 on_state: root.toggle_TextToSpeech(self)
-
-#         # Replaced the single button with the live preview image
-#         Image:
-#             id: preview_image
-#             size_hint: (1, 0.4)
-#             allow_stretch: True
-#             keep_ratio: True
-#             source: ''  # initially empty; texture will be set by ui.py
-
-#         Label:
-#             text: "Output"
-#             size_hint: (1, 0.1)
