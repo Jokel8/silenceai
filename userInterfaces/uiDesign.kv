@@ -3,11 +3,18 @@
 #:import Factory kivy.factory.Factory
 
 # Custom 3D Button with gradient and shadow effect
-<Custom3DButton@ToggleButton>:
+<Custom3DButton@Button>:
+    background_normal: ''
+    background_down: ''
+    background_color: 0, 0, 0, 0
+    color: 1, 1, 1, 1
+    bold: True
+    font_size: '14sp'
+    
     canvas.before:
         # Shadow
         Color:
-            rgba: 0, 0, 0, 0.3 if self.state == 'normal' else 0.5
+            rgba: 0, 0, 0, 0.3
         RoundedRectangle:
             pos: self.x + 3, self.y - 3
             size: self.size
@@ -15,7 +22,7 @@
         
         # Gradient background
         Color:
-            rgba: (0.2, 0.3, 0.8, 1) if self.state == 'normal' else (0.1, 0.8, 0.4, 1)
+            rgba: 0.2, 0.3, 0.8, 1
         RoundedRectangle:
             pos: self.pos
             size: self.size
@@ -31,20 +38,10 @@
         
         # Inner border glow
         Color:
-            rgba: (0.4, 0.5, 1, 0.3) if self.state == 'normal' else (0.2, 1, 0.5, 0.5)
+            rgba: 0.4, 0.5, 1, 0.3
         Line:
             width: 2
             rounded_rectangle: self.x + 2, self.y + 2, self.width - 4, self.height - 4, 13
-    
-    color: 1, 1, 1, 1
-    bold: True
-    font_size: '14sp'
-    
-    # Animation on press
-    on_press:
-        self.opacity = 0.8
-    on_release:
-        self.opacity = 1.0
 
 # Gesture Recognition Box
 <GestureBox@BoxLayout>:
@@ -118,36 +115,22 @@
             spacing: 15
             
             # Preprocessing Dropdown Button
-            Button:
+            Custom3DButton:
                 id: preprocessing_dropdown_btn
                 text: "Preprocessing Settings"
-                background_color: 0, 0, 0, 0
-                canvas.before:
-                    Color:
-                        rgba: (0.2, 0.3, 0.8, 1)
-                    RoundedRectangle:
-                        pos: self.pos
-                        size: self.size
-                        radius: [15,]
-                    Color:
-                        rgba: (0.4, 0.5, 1, 0.3)
-                    Line:
-                        width: 2
-                        rounded_rectangle: self.x + 2, self.y + 2, self.width - 4, self.height - 4, 13
-                color: 1, 1, 1, 1
-                bold: True
-                font_size: '14sp'
                 on_release: root.toggle_preprocessing_dropdown(self)
             
+            # Model Selection Dropdown Button
             Custom3DButton:
-                text: "Postprocessing"
-                state: 'down'
-                on_state: root.toggle_postprocessing(self)
+                id: model_dropdown_btn
+                text: "Model Selection"
+                on_release: root.toggle_model_dropdown(self)
             
+            # Postprocessing Dropdown Button
             Custom3DButton:
-                text: "Text to Speech"
-                state: 'down'
-                on_state: root.toggle_TextToSpeech(self)
+                id: postprocessing_dropdown_btn
+                text: "Postprocessing"
+                on_release: root.toggle_postprocessing_dropdown(self)
         
         # Main Preview Section
         BoxLayout:
