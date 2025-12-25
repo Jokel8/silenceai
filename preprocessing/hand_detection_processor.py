@@ -18,7 +18,7 @@ class HandDetectionProcessor:
         self,
         confidence=0.5,
         max_hands=2,
-        model_path="userInterfaces/GUI/managers/preprocessing/models/hand_landmarker.task"
+        model_path="silenceai/preprocessing/models/hand_landmarker.task"
     ):
         self._confidence = max(0.0, min(1.0, float(confidence)))
         self._max_hands = max_hands

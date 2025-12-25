@@ -1,59 +1,82 @@
-import threading
-import time
-from userInterfaces import speechInterface, consoleInterface, graficInterface
+"""
+main_app.py
+Main Kivy application entry point
+"""
 
-class State():
-    def __init__(self):
-        self.isRunning = True
-        self.usePreProcessing = True
-        self.usePostProcessing = True
-        self.useTextToSpeech = True
-        self.gotGeasture = False
-        self.guesses = [["", 0.0], ["", 0.0], ["", 0.0]]
-        self.output = ""
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.core.window import Window
+from kivy.properties import NumericProperty
+from kivy.clock import Clock
 
-def captureLoop(state):    
-    consoleInterface.print_status("Starte Verarbeitung...")
-    while state.isRunning:
-        analyseThread = threading.Thread(target=analysis(state))
-        analyseThread.start()
-        time.sleep(3)
+from .ui import consoleInterface
+from .ui.graphics.ui_widget import UI
+from .ui.graphics.stream_processor import StreamProcessor
+Builder.load_file('ui/graphics/uiDesign.kv')
+
+
+class MyApp(App):
+    """Main Kivy Application"""
+    
+    fps = NumericProperty(25.0)
+
+    def __init__(self, state):
+        super(MyApp, self).__init__()
+        self.buttonState = state
+
+    def build(self):
+        Window.clearcolor = (0, 0, 75/255.0, 0.5)
+        self.root = UI(self.buttonState)
+        return self.root
+
+    def on_start(self):
+        # Create StreamProcessor
+        self.sp = StreamProcessor(
+            self.buttonState,
+            ai_out_dir="preprocessing/out",
+            ai_w=210,
+            ai_h=300,
+            target_fps=self.fps
+        )
         
-def analysis(state):    
-    if state.gotGeasture: return
-    state.gotGeasture = True
-    consoleInterface.print_status("Verarbeite Videosignal...")
-    time.sleep(1)
+        # Connect with UI
+        self.root.set_stream_processor(self.sp)
+        
+        # Start stream
+        self.sp.start(show_preview=False)
+        
+        # Schedule UI Updates
+        Clock.schedule_interval(self.root.update_preview_texture, 1.0 / 30.0)
+        Clock.schedule_interval(self.while_running, 0.1)
     
-    #KI Analyse
-    text = "Test"
-    #text, confidence = analyzeVideo()
-    
-    if not state.isRunning: return
-    
-    if state.usePostProcessing:
-        consoleInterface.print_status("Postprocessing wird angewendet...")
-        #text = postProcessing(text)
+    def while_running(self, dt):
+        if not hasattr(self, 'root') or not hasattr(self, 'buttonState'):
+            return
+        
+        if self.buttonState.gotGeasture:
+            self.root.clear_gesture_guesses()
+            self.root.update_gesture_guesses(self.buttonState.guesses)
+            self.buttonState.gotGeasture = False
 
-    if not state.isRunning: return
-    
-    if state.useTextToSpeech:
-        speechInterface.say(text)
-    
-    state.gotGeasture = False
+    def on_stop(self):
+        try:
+            if hasattr(self, 'sp') and self.sp is not None:
+                self.sp.stop()
+        except Exception as e:
+            consoleInterface.print_error(f"Error stopping stream processor: {e}")
 
-state = State()
 
-consoleThread = threading.Thread(target=consoleInterface.consoleLoop, args=(state,))
-consoleThread.start()
+if __name__ == '__main__':
+    class State():
+        def __init__(self):
+            self.isRunning = True
+            self.usePreProcessing = True
+            self.usePostProcessing = True
+            self.useTextToSpeech = True
+            self.gotGeasture = False
+            self.guesses = [["", 0.0], ["", 0.0], ["", 0.0]]
+            self.selectedModel = "v1.0"
 
-app = graficInterface.MyApp(state)
-app.run()
-
-# captureThread = threading.Thread(target=captureLoop, args=(state,))
-# captureThread.start()
-
-# Warten, bis der Nebenthread beendet ist
-consoleThread.join()
-consoleInterface.print_instruction("SilenceAI wurde beendet")
-exit(0)
+    state = State()
+    app = MyApp(state)
+    app.run()

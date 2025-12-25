@@ -7,11 +7,11 @@ import cv2
 import threading
 import time
 
-from .managers.processor_manager import ProcessorManager
-from .managers.feature_manager import FeatureManager
-from .managers.frame_processor import FrameProcessor
-from .managers.camera_manager import CameraManager
-from .managers.ai_queue_manager import AIQueueManager
+from ..managers.processor_manager import ProcessorManager
+from ..managers.feature_manager import FeatureManager
+from ..managers.frame_processor import FrameProcessor
+from ..managers.camera_manager import CameraManager
+from ..managers.ai_queue_manager import AIQueueManager
 
 
 DEFAULT_AI_W = 210

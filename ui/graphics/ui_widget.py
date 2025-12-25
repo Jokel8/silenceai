@@ -9,14 +9,14 @@ from kivy.graphics.texture import Texture
 import cv2
 
 try:
-    from userInterfaces import consoleInterface
-    from userInterfaces.GUI.widget.dropdown_widgets import (
+    from ui import consoleInterface
+    from ui.graphics.dropdown_widgets import (
         PreprocessingDropdown, 
         ModelSelectionDropdown, 
         PostprocessingDropdown
     )
 except ImportError:
-    import consoleInterface
+    from .. import consoleInterface
     from .dropdown_widgets import (
         PreprocessingDropdown, 
         ModelSelectionDropdown, 

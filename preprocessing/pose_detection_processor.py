@@ -17,7 +17,7 @@ class PoseDetectionProcessor:
     def __init__(
         self,
         confidence=0.5,
-        model_path="userInterfaces/GUI/managers/preprocessing/models/pose_landmarker_lite.task"
+        model_path="silenceai/preprocessing/models/pose_landmarker_lite.task"
     ):
         self._confidence = max(0.0, min(1.0, float(confidence)))
         self._model_path = model_path
