@@ -6,119 +6,152 @@ import time
 import joblib
 import os
 
-# Modell und LabelEncoder laden
-MODEL_PATH = "silenceai/Training/models/gesture_model_phoenix2.h5"
-LABEL_ENCODER_PATH = "silenceai/Training/models/label_encoder_phoenix2.pkl"
+from mediapipe.tasks.python import vision
+from mediapipe.tasks.python.core import base_options
+
+
+# ------------------------------------------------------------
+# Modell & LabelEncoder laden
+# ------------------------------------------------------------
+
+MODEL_PATH = "training/models/gesture_model_phoenix2.h5"
+LABEL_ENCODER_PATH = "training/models/label_encoder_phoenix2.pkl"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# LabelEncoder laden (falls vorhanden), sonst Klassen manuell setzen
 if os.path.exists(LABEL_ENCODER_PATH):
-    from sklearn.preprocessing import LabelEncoder
     label_encoder = joblib.load(LABEL_ENCODER_PATH)
     CLASSES = list(label_encoder.classes_)
 else:
-    CLASSES = ["Zwei", "Vier"]  # Fallback
+    CLASSES = ["Zwei", "Vier"]
 
-# MediaPipe Hands Setup
-mp_hands = mp.solutions.hands
-mp_drawing = mp.solutions.drawing_utils
 
-# FPS Berechnung
-prev_time = 0
+# ------------------------------------------------------------
+# MediaPipe HandLandmarker (Tasks API)
+# ------------------------------------------------------------
 
-def extract_keypoints(hand_landmarks):
-    """Keypoints in 1D-Vektor umwandeln"""
-    return np.array([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark]).flatten()
+HAND_MODEL_PATH = "training/models/hand_landmarker.task"
 
-def extract_keypoints_from_results(results):
+options = vision.HandLandmarkerOptions(
+    base_options=base_options.BaseOptions(
+        model_asset_path=HAND_MODEL_PATH
+    ),
+    num_hands=2
+)
+
+landmarker = vision.HandLandmarker.create_from_options(options)
+
+
+# ------------------------------------------------------------
+# Feature-Extraktion
+# ------------------------------------------------------------
+
+def extract_keypoints_from_result(result):
     keypoints = []
-    if results.multi_hand_landmarks:
-        for hand_landmarks in results.multi_hand_landmarks:
-            keypoints.extend([[lm.x, lm.y, lm.z] for lm in hand_landmarks.landmark])
-    # Auf 127 Werte auffüllen
+
+    if result.hand_landmarks:
+        for hand_landmarks in result.hand_landmarks:
+            for lm in hand_landmarks:
+                keypoints.extend([lm.x, lm.y, lm.z])
+
     keypoints = np.array(keypoints).flatten()
+
     if keypoints.shape[0] < 127:
-        keypoints = np.pad(keypoints, (0, 127 - keypoints.shape[0]), mode='constant')
+        keypoints = np.pad(
+            keypoints,
+            (0, 127 - keypoints.shape[0]),
+            mode="constant"
+        )
+
     return keypoints
 
-# Kamera starten
+
+# ------------------------------------------------------------
+# Kamera & FPS
+# ------------------------------------------------------------
+
 cap = cv2.VideoCapture(0)
+prev_time = 0
 
-with mp_hands.Hands(
-    static_image_mode=False,
-    max_num_hands=2,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-) as hands:
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+# ------------------------------------------------------------
+# Main Loop
+# ------------------------------------------------------------
 
-        frame = cv2.flip(frame, 1)
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = hands.process(rgb)
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-        gesture_text = "Keine Hand erkannt"
+    frame = cv2.flip(frame, 1)
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        if results.multi_hand_landmarks:
-            # Draw hand landmarks
-            for hand_landmarks in results.multi_hand_landmarks:
-                # Draw the landmarks
-                mp_drawing.draw_landmarks(
-                    frame,
-                    hand_landmarks,
-                    mp_hands.HAND_CONNECTIONS,
-                    mp_drawing.DrawingSpec(color=(121, 22, 76), thickness=2, circle_radius=4),  # Points
-                    mp_drawing.DrawingSpec(color=(250, 44, 250), thickness=2)  # Lines
-                )
-                
-            features = extract_keypoints_from_results(results).reshape(1, -1)
-            print(f"Feature values min/max: {features.min():.3f}/{features.max():.3f}")
-            
-            probs = model.predict(features, verbose=0)[0]
-            pred_class = np.argmax(probs)
-            
-            # Debugging hinzufügen
-            print(f"Top 3 Vorhersagen:")
-            top_3_indices = np.argsort(probs)[-3:][::-1]
-            for idx in top_3_indices:
-                print(f"Klasse {CLASSES[idx]}: {probs[idx]*100:.2f}%")
-            
-            # Nur Vorhersagen über einem Schwellenwert anzeigen
-            confidence_threshold = 0.5  # 50% Schwellenwert
-            if probs[pred_class] > confidence_threshold:
-                gesture_text = f"Zeichen: {CLASSES[pred_class]} ({probs[pred_class]*100:.1f}%)"
-            else:
-                gesture_text = "Unsicher (zu geringe Konfidenz)"
+    mp_image = mp.Image(
+        image_format=mp.ImageFormat.SRGB,
+        data=rgb
+    )
 
-        # FPS berechnen
-        curr_time = time.time()
-        fps = 1 / (curr_time - prev_time)
-        prev_time = curr_time
+    result = landmarker.detect(mp_image)
 
-        # Text einblenden
-        cv2.putText(frame, gesture_text, (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-        cv2.putText(frame, f"FPS: {int(fps)}", (10, 60),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
+    gesture_text = "Keine Hand erkannt"
 
-        # Top 3 Vorhersagen auf dem Bildschirm anzeigen
-        if results.multi_hand_landmarks:
-            y_pos = 90  # Startposition für die Top 3 Liste
-            for idx in top_3_indices:
-                text = f"{CLASSES[idx]}: {probs[idx]*100:.1f}%"
-                cv2.putText(frame, text, (10, y_pos),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255,255,0), 2)
-                y_pos += 30  # Abstand zwischen den Zeilen
+    # --------------------------------------------------------
+    # Landmark-Zeichnung + Inferenz
+    # --------------------------------------------------------
 
-        # Bild anzeigen
-        cv2.imshow("DGS Live Gesture Recognition (MLP)", frame)
+    if result.hand_landmarks:
+        h, w, _ = frame.shape
 
-        if cv2.waitKey(1) & 0xFF == 27:  # ESC
-            break
+        for hand_landmarks in result.hand_landmarks:
+            for lm in hand_landmarks:
+                x = int(lm.x * w)
+                y = int(lm.y * h)
+                cv2.circle(frame, (x, y), 4, (0, 255, 0), -1)
+
+        features = extract_keypoints_from_result(result).reshape(1, -1)
+
+        probs = model.predict(features, verbose=0)[0]
+        pred_class = np.argmax(probs)
+
+        top_3_indices = np.argsort(probs)[-3:][::-1]
+
+        confidence_threshold = 0.5
+        if probs[pred_class] > confidence_threshold:
+            gesture_text = f"Zeichen: {CLASSES[pred_class]} ({probs[pred_class]*100:.1f}%)"
+        else:
+            gesture_text = "Unsicher (zu geringe Konfidenz)"
+
+    # --------------------------------------------------------
+    # FPS
+    # --------------------------------------------------------
+
+    curr_time = time.time()
+    fps = 1 / (curr_time - prev_time) if prev_time > 0 else 0
+    prev_time = curr_time
+
+    # --------------------------------------------------------
+    # Overlay Text
+    # --------------------------------------------------------
+
+    cv2.putText(frame, gesture_text, (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+    cv2.putText(frame, f"FPS: {int(fps)}", (10, 60),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
+    if result.hand_landmarks:
+        y_pos = 90
+        for idx in top_3_indices:
+            text = f"{CLASSES[idx]}: {probs[idx]*100:.1f}%"
+            cv2.putText(frame, text, (10, y_pos),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            y_pos += 30
+
+    cv2.imshow("DGS Live Gesture Recognition (Tasks API)", frame)
+
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
+
 
 cap.release()
 cv2.destroyAllWindows()

@@ -19,8 +19,8 @@ handKeypointExtractor = HandKeypointsExtractor()
 handKeypointsNormalizer = HandKeypointsNormalizer()
 
 # Model and LabelEncoder paths
-MODEL_PATH = "silenceai/Training/models/gesture_model_phoenix2.h5"
-LABEL_ENCODER_PATH = "silenceai/Training/models/label_encoder_phoenix2.pkl"
+MODEL_PATH = "training/models/gesture_model_phoenix2.h5"
+LABEL_ENCODER_PATH = "training/models/label_encoder_phoenix2.pkl"
 
 model = tf.keras.models.load_model(MODEL_PATH)
 #model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -172,7 +172,7 @@ def run_pipeline():
             # Return result for further processing
             yield analysis_result
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     # Run the pipeline
     for result in run_pipeline():
         # Here you can add additional processing steps
