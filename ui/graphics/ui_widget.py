@@ -217,5 +217,24 @@ class UI(Widget):
             buf = rgb.tobytes()
             self.preview_image.texture.blit_buffer(buf, colorfmt='rgb', bufferfmt='ubyte')
             self.preview_image.canvas.ask_update()
+            # Try to read gesture guesses from the stream processor's state
+            try:
+                guesses = None
+                if hasattr(self, 'stream_proc') and self.stream_proc is not None:
+                    sp = self.stream_proc
+                    # common locations for stored guesses: sp.state.gesture_guesses or sp.gesture_guesses
+                    if hasattr(sp, 'state') and getattr(sp, 'state') is not None:
+                        guesses = getattr(sp.state, 'gesture_guesses', None)
+                    else:
+                        guesses = getattr(sp, 'gesture_guesses', None)
+
+                if guesses:
+                    # Expecting list of (label, percent) tuples
+                    self.update_gesture_guesses(guesses)
+            except Exception as e:
+                try:
+                    consoleInterface.print_error(f"Error updating gesture display from state: {e}")
+                except Exception:
+                    pass
         except Exception as e:
             consoleInterface.print_error(f"Preview update error: {e}")
