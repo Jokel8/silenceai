@@ -79,4 +79,4 @@ class MediaPipeProcessor:
     
     def process_all(self, frame_rgb, frame_shape):
         """
-        Process all MediaPipe models an
+        Process all MediaPipe models an """

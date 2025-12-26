@@ -9,15 +9,15 @@ class ProcessorManager:
     
     def __init__(self):
         # Import processors
-        from silenceai.preprocessing.brightness_processor import BrightnessProcessor
-        from silenceai.preprocessing.clahe_processor import CLAHEProcessor
-        from silenceai.preprocessing.crop_resize_processor import CropResizeProcessor
-        from silenceai.preprocessing.mask_combiner_processor import MaskCombinerProcessor
-        from silenceai.preprocessing.background_removal_processor import BackgroundRemovalProcessor
-        from silenceai.preprocessing.contour_drawer_processor import ContourDrawerProcessor
-        from silenceai.preprocessing.segmentation_processor import SegmentationProcessor
-        from silenceai.preprocessing.hand_detection_processor import HandDetectionProcessor
-        from silenceai.preprocessing.pose_detection_processor import PoseDetectionProcessor
+        from preprocessing.brightness_processor import BrightnessProcessor
+        from preprocessing.clahe_processor import CLAHEProcessor
+        from preprocessing.crop_resize_processor import CropResizeProcessor
+        from preprocessing.mask_combiner_processor import MaskCombinerProcessor
+        from preprocessing.background_removal_processor import BackgroundRemovalProcessor
+        from preprocessing.contour_drawer_processor import ContourDrawerProcessor
+        from preprocessing.segmentation_processor import SegmentationProcessor
+        from preprocessing.keypoint_extraction_processor import HandDetectionProcessor
+        from preprocessing.pose_detection_processor import PoseDetectionProcessor
         from .. import consoleInterface
         self.console = consoleInterface
             

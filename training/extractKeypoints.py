@@ -1,71 +1,57 @@
+"""
+hand_keypoints_extractor.py
+Unified hand keypoints extraction for training and pipeline
+Uses HandDetectionProcessor from preprocessing
+"""
+
 import os
+import sys
 import cv2
-import mediapipe as mp
 import pandas as pd
 import numpy as np
 from pathlib import Path
 
-from mediapipe.tasks.python import vision
-from mediapipe.tasks.python.core import base_options
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from preprocessing.keypoint_extraction_processor import HandDetectionProcessor
 
 
 class HandKeypointsExtractor:
+    """
+    Unified keypoint extractor that wraps HandDetectionProcessor
+    Compatible with legacy extractKeypoints interface
+    """
 
-    def __init__(self, model_path="training/models/hand_landmarker.task"):
+    def __init__(self, model_path="preprocessing/models/hand_landmarker.task"):
         print("Current working directory:", os.getcwd())
         self.image_extensions = {'.jpg', '.png'}
-
-        options = vision.HandLandmarkerOptions(
-            base_options=base_options.BaseOptions(
-                model_asset_path=model_path
-            ),
-            num_hands=2
+        
+        # Use HandDetectionProcessor internally
+        self.processor = HandDetectionProcessor(
+            confidence=0.5,
+            max_hands=2,
+            model_path=model_path,
+            draw_keypoints=False
         )
-
-        self.landmarker = vision.HandLandmarker.create_from_options(options)
 
     def extractKeypoints(self, frame):
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        mp_image = mp.Image(
-            image_format=mp.ImageFormat.SRGB,
-            data=rgb
-        )
-
-        result = self.landmarker.detect(mp_image)
-
-        left_hand = np.zeros(63)
-        right_hand = np.zeros(63)
-
-        if result.hand_landmarks and result.handedness:
-            h, w, _ = frame.shape
-
-            for hand_landmarks, handedness in zip(
-                result.hand_landmarks,
-                result.handedness
-            ):
-                label = handedness[0].category_name
-                keypoints = []
-
-                for lm in hand_landmarks:
-                    keypoints.extend([lm.x, lm.y, lm.z])
-
-                    x = int(lm.x * w)
-                    y = int(lm.y * h)
-                    cv2.circle(frame, (x, y), 4, (0, 255, 0), -1)
-
-                if label == "Left":
-                    left_hand = np.array(keypoints)
-                elif label == "Right":
-                    right_hand = np.array(keypoints)
-
-        return {
-            "frame": frame,
-            "left_hand": left_hand,
-            "right_hand": right_hand
-        }
+        """
+        Extract hand keypoints from frame
+        
+        Args:
+            frame: BGR image from camera/file
+            
+        Returns:
+            dict with keys:
+                - "frame": annotated frame
+                - "left_hand": numpy array of 63 values (21 keypoints × 3 coordinates)
+                - "right_hand": numpy array of 63 values (21 keypoints × 3 coordinates)
+        """
+        return self.processor.extractKeypoints(frame)
 
     def create_column_names(self):
+        """Create CSV column names for keypoint data"""
         columns = ["image_path"]
 
         for i in range(21):
@@ -85,6 +71,15 @@ class HandKeypointsExtractor:
         return columns
 
     def process_subfolder(self, subfolder_path):
+        """
+        Process all images in a subfolder and extract keypoints
+        
+        Args:
+            subfolder_path: Path to folder containing images
+            
+        Returns:
+            DataFrame with keypoint data or None if no valid data
+        """
         print(f"Verarbeite Unterordner: {subfolder_path}")
 
         image_files = []
@@ -126,6 +121,13 @@ class HandKeypointsExtractor:
         return df
 
     def extractFromFile(self, input_directory, output_directory):
+        """
+        Extract keypoints from all images in subfolders and save to CSV
+        
+        Args:
+            input_directory: Root directory containing subfolders with images
+            output_directory: Directory where CSV files will be saved
+        """
         input_directory = Path(input_directory)
         output_directory = Path(output_directory)
         output_directory.mkdir(parents=True, exist_ok=True)

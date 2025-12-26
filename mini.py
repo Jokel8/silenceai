@@ -10,10 +10,10 @@ import joblib
 import threading
 import pyttsx3
 
-from .training.extractKeypoints import HandKeypointsExtractor
-from .training.normalizKeypoints import HandKeypointsNormalizer
+from training.extractKeypoints import HandKeypointsExtractor
+from training.normalizKeypoints import HandKeypointsNormalizer
 from preprocessing.keypoint_normalization_processor import KeypointsNormalizeProcessor
-from .training.core_processing import GestureAnalyzer
+from coreprocessing.gesture_analyzer import GestureAnalyzer
 from ui.graphics.keypoint_drawer import KeypointDrawerProcessor
 
 speech_lock = threading.Lock()

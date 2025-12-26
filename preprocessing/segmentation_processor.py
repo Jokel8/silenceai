@@ -17,7 +17,7 @@ class SegmentationProcessor:
     def __init__(
         self,
         threshold=0.4,
-        model_path="silenceai/preprocessing/models/selfie_segmenter.tflite"
+        model_path="preprocessing/models/selfie_segmenter.tflite"
     ):
         print("Current working directory:", os.getcwd())
         self._threshold = max(0.0, min(1.0, float(threshold)))

@@ -9,9 +9,9 @@ from kivy.core.window import Window
 from kivy.properties import NumericProperty
 from kivy.clock import Clock
 
-from .ui import consoleInterface
-from .ui.graphics.ui_widget import UI
-from .ui.graphics.stream_processor import StreamProcessor
+from ui import consoleInterface
+from ui.graphics.ui_widget import UI
+from ui.graphics.stream_processor import StreamProcessor
 Builder.load_file('ui/graphics/uiDesign.kv')
 
 

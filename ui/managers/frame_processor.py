@@ -6,6 +6,10 @@ Handles individual frame processing logic
 import cv2
 import numpy as np
 
+from ui.graphics.keypoint_drawer import KeypointDrawerProcessor
+from preprocessing.keypoint_normalization_processor import KeypointsNormalizeProcessor
+from coreprocessing.gesture_analyzer import GestureAnalyzer
+
 
 class FrameProcessor:
     """Processes individual frames through the pipeline"""
@@ -16,6 +20,10 @@ class FrameProcessor:
         self.state = state
         self.AI_W = ai_w
         self.AI_H = ai_h
+        # Initialize processors used in GUI pipeline
+        self.keypoint_drawer = KeypointDrawerProcessor(keypoint_size=4, line_thickness=2, color=(255, 255, 0))
+        self.keypoint_normalizer = KeypointsNormalizeProcessor()
+        self.gesture_analyzer = GestureAnalyzer()
     
     def process_frame(self, frame):
         """
@@ -111,7 +119,41 @@ class FrameProcessor:
         preview_comp = self.pm.background_proc.composite_on_background(
             processed_img, combined_255, raw_frame
         )
-        
+        # If hands detection is enabled, extract keypoints, normalize and analyze
+        try:
+            if self.fm.use_hands:
+                # Extract keypoints (returns dict with 'frame','left_hand','right_hand')
+                kp_data = self.pm.hand_proc.extractKeypoints(processed_img)
+
+                # Draw keypoints on preview
+                try:
+                    preview_comp = self.keypoint_drawer.process(preview_comp, kp_data)
+                except Exception:
+                    pass
+
+                # Normalize keypoints for analysis
+                try:
+                    normalized = self.keypoint_normalizer.process({
+                        'left_hand': kp_data.get('left_hand', np.zeros(63)),
+                        'right_hand': kp_data.get('right_hand', np.zeros(63))
+                    })
+                except Exception:
+                    normalized = {'left_hand': np.zeros(63), 'right_hand': np.zeros(63)}
+
+                # Analyze gestures and overlay prediction
+                try:
+                    result = self.gesture_analyzer.analyze(normalized)
+                    text = result.get('prediction', {}).get('text', '')
+                    if text:
+                        cv2.putText(preview_comp, str(text), (10, 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+                except Exception:
+                    # Analyzer might fail if model missing — ignore to keep GUI stable
+                    pass
+        except Exception:
+            # Keep preview even if extraction or drawing fails
+            pass
+
         # Draw contour if enabled
         if self.fm.use_contour:
             return self.pm.contour_drawer.process(preview_comp, combined_255)

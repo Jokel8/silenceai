@@ -3,46 +3,29 @@ import numpy as np
 from pathlib import Path
 import os
 
-class HandKeypointsNormalizer:    
+from preprocessing.keypoint_normalization_processor import KeypointsNormalizeProcessor
+
+
+class HandKeypointsNormalizer:
+    """
+    Handles I/O operations for keypoint normalization
+    Uses KeypointsNormalizeProcessor for actual normalization logic
+    """
+    
+    def __init__(self):
+        self.processor = KeypointsNormalizeProcessor()
+    
     def relative_to_wrist_normalize(self, points_dict):
-        """
-        Normalize keypoints relative to wrist position for both hands
-        Args:
-            points_dict: Dictionary with 'left_hand' and 'right_hand' arrays
-        Returns:
-            Dictionary with normalized arrays
-        """
-        normalized = {}
-        for hand in ['left_hand', 'right_hand']:
-            points_array = points_dict[hand]
-            if np.any(points_array != 0):
-                # Reshape to (21,3) for easier processing
-                points = points_array.reshape(21, 3)
-                # First point is wrist
-                wrist = points[0]
-                # Normalize relative to wrist
-                normalized[hand] = (points - wrist).flatten()
-            else:
-                normalized[hand] = points_array
-        return normalized
+        """Normalize keypoints relative to wrist position"""
+        return self.processor.relative_to_wrist_normalize(points_dict)
 
     def global_minmax_normalize(self, points_dict):
-        """
-        Perform global min-max normalization on both hands
-        Args:
-            points_dict: Dictionary with 'left_hand' and 'right_hand' arrays
-        Returns:
-            Dictionary with normalized arrays
-        """
-        normalized = {}
-        for hand in ['left_hand', 'right_hand']:
-            points_array = points_dict[hand]
-            max_abs_value = np.abs(points_array).max()
-            if max_abs_value > 0:
-                normalized[hand] = points_array / max_abs_value
-            else:
-                normalized[hand] = points_array
-        return normalized
+        """Perform global min-max normalization"""
+        return self.processor.global_minmax_normalize(points_dict)
+    
+    def process(self, keypoints_dict):
+        """Apply all normalization steps in sequence"""
+        return self.processor.process(keypoints_dict)
     
     def process_file(self, csv_file, output_directory):
         df = pd.read_csv(csv_file)
