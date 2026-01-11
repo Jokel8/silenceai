@@ -1,9 +1,8 @@
-cv2
+opencv-python
 cvzone
 mediapipe
-threading
-pyttsx3
 pyttsx3
 joblib
-tensorflow
+tensorflow-lite
 numpy
+kivy

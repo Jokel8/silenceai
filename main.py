@@ -3,6 +3,7 @@ main_app.py
 Main Kivy application entry point
 """
 
+import os
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
@@ -12,6 +13,13 @@ from kivy.clock import Clock
 from ui import consoleInterface
 from ui.graphics.ui_widget import UI
 from ui.graphics.stream_processor import StreamProcessor
+
+# Android Permissions Handler
+try:
+    from android.permissions import request_permissions, Permission
+    request_permissions([Permission.CAMERA, Permission.RECORD_AUDIO])
+except ImportError:
+    pass
 Builder.load_file('ui/graphics/uiDesign.kv')
 
 
