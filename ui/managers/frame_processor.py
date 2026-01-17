@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 from ui.graphics.keypoint_drawer import KeypointDrawerProcessor
-from preprocessing.keypoint_normalization_processor import KeypointsNormalizeProcessor
+from preprocessing.keypoint_normalization_processor import KeypointNormalizationProcessor
 from coreprocessing.gesture_analyzer import GestureAnalyzer
 
 
@@ -22,7 +22,7 @@ class FrameProcessor:
         self.AI_H = ai_h
         # Initialize processors used in GUI pipeline
         self.keypoint_drawer = KeypointDrawerProcessor(keypoint_size=4, line_thickness=2, color=(255, 255, 0))
-        self.keypoint_normalizer = KeypointsNormalizeProcessor()
+        self.keypoint_normalizer = KeypointNormalizationProcessor()
         self.gesture_analyzer = GestureAnalyzer()
     
     def process_frame(self, frame):
@@ -88,6 +88,46 @@ class FrameProcessor:
         
         return processed_img
     
+    def _extract_combined_keypoints(self, frame):
+        """
+        Extract hand and face keypoints and combine them
+        
+        Args:
+            frame: BGR image frame
+        
+        Returns:
+            Dictionary with combined keypoints data
+        """
+        combined_kp = {}
+        
+        # Extract hand keypoints if enabled
+        if self.fm.use_hands and hasattr(self.pm, 'hand_proc'):
+            try:
+                hand_data = self.pm.hand_proc.extractKeypoints(frame)
+                combined_kp['left_hand'] = hand_data.get('left_hand', np.zeros(63))
+                combined_kp['right_hand'] = hand_data.get('right_hand', np.zeros(63))
+            except Exception:
+                combined_kp['left_hand'] = np.zeros(63)
+                combined_kp['right_hand'] = np.zeros(63)
+        
+        # Extract face keypoints (lips + head pose) if enabled
+        if self.fm.use_face and hasattr(self.pm, 'face_proc'):
+            try:
+                face_data = self.pm.face_proc.extractKeypoints(frame)
+                combined_kp['lips'] = face_data.get('lips', np.zeros(54))
+                combined_kp['left_eye'] = face_data.get('left_eye', np.zeros(12))
+                combined_kp['right_eye'] = face_data.get('right_eye', np.zeros(12))
+                combined_kp['head_pose'] = face_data.get('head_pose', {'pitch': 0.0, 'yaw': 0.0, 'roll': 0.0})
+                combined_kp['face_landmarks'] = face_data.get('face_landmarks', np.zeros(468 * 3))
+            except Exception:
+                combined_kp['lips'] = np.zeros(54)
+                combined_kp['left_eye'] = np.zeros(12)
+                combined_kp['right_eye'] = np.zeros(12)
+                combined_kp['head_pose'] = {'pitch': 0.0, 'yaw': 0.0, 'roll': 0.0}
+                combined_kp['face_landmarks'] = np.zeros(468 * 3)
+        
+        return combined_kp
+    
     def _create_ai_output_with_preprocessing(self, processed_img, combined_255):
         """Create AI output with preprocessing enabled"""
         if self.fm.use_crop:
@@ -142,25 +182,24 @@ class FrameProcessor:
                         crop_processed, crop_mask, crop_raw
                     )
 
-                    # If hands detection is enabled, extract keypoints from the cropped processed image
+                    # If hands/face detection is enabled, extract keypoints from the cropped processed image
                     kp_data = None
-                    if self.fm.use_hands:
+                    if self.fm.use_hands or self.fm.use_face:
                         try:
-                            kp_data = self.pm.hand_proc.extractKeypoints(crop_processed)
+                            kp_data = self._extract_combined_keypoints(crop_processed)
                         except Exception:
                             kp_data = None
-
-                    # Draw keypoints on the small preview if available
-                    if kp_data is not None:
-                        try:
-                            preview_small = self.keypoint_drawer.process(preview_small, kp_data)
-                        except Exception:
-                            pass
 
                     # Draw contour on the small preview using the cropped mask
                     if self.fm.use_contour:
                         try:
                             preview_small = self.pm.contour_drawer.process(preview_small, crop_mask)
+                        except Exception:
+                            pass
+                    # Draw keypoints on the small preview if available
+                    if kp_data is not None:
+                        try:
+                            preview_small = self.keypoint_drawer.process(preview_small, kp_data)
                         except Exception:
                             pass
 
@@ -192,13 +231,21 @@ class FrameProcessor:
             preview_comp = self.pm.background_proc.composite_on_background(
                 processed_img, combined_255, raw_frame
             )
-        # If hands detection is enabled, extract keypoints (unless already extracted for cropped flow),
+        
+        # Draw contour early, before keypoints/face overlay
+        if self.fm.use_contour and not (self.fm.use_crop and crop_coords is not None):
+            try:
+                preview_comp = self.pm.contour_drawer.process(preview_comp, combined_255)
+            except Exception:
+                pass
+        
+        # If hands/face detection is enabled, extract keypoints (unless already extracted for cropped flow),
         # normalize and analyze
         try:
-            if self.fm.use_hands:
+            if self.fm.use_hands or self.fm.use_face:
                 if 'kp_data' not in locals() or kp_data is None:
                     try:
-                        kp_data = self.pm.hand_proc.extractKeypoints(processed_img)
+                        kp_data = self._extract_combined_keypoints(processed_img)
                     except Exception:
                         kp_data = None
 
@@ -211,10 +258,7 @@ class FrameProcessor:
 
                 # Normalize keypoints for analysis
                 try:
-                    normalized = self.keypoint_normalizer.process({
-                        'left_hand': kp_data.get('left_hand', np.zeros(63)) if kp_data else np.zeros(63),
-                        'right_hand': kp_data.get('right_hand', np.zeros(63)) if kp_data else np.zeros(63)
-                    })
+                    normalized = self.keypoint_normalizer.process(kp_data)
                 except Exception:
                     normalized = {'left_hand': np.zeros(63), 'right_hand': np.zeros(63)}
 
@@ -239,11 +283,4 @@ class FrameProcessor:
         except Exception:
             pass
 
-        # Draw contour only for the non-cropped preview here (cropped flow already applied contour)
-        if self.fm.use_contour:
-            if self.fm.use_crop and crop_coords is not None:
-                return preview_comp
-            else:
-                return self.pm.contour_drawer.process(preview_comp, combined_255)
-        else:
-            return preview_comp
+        return preview_comp

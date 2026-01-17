@@ -3,6 +3,7 @@ main_app.py
 Main Kivy application entry point
 """
 
+import os
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
@@ -67,6 +68,9 @@ class MyApp(App):
 
 
 if __name__ == '__main__':
+    #WORK_DIR = "SilenceAI"
+    #os.chdir(WORK_DIR)
+    
     class State():
         def __init__(self):
             self.isRunning = True

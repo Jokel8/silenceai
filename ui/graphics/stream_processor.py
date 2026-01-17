@@ -62,6 +62,9 @@ class StreamProcessor:
     def toggle_hands(self, enabled):
         self.feature_manager.toggle_hands(enabled)
     
+    def toggle_face(self, enabled):
+        self.feature_manager.toggle_face(enabled)
+    
     def toggle_pose(self, enabled):
         self.feature_manager.toggle_pose(enabled)
     

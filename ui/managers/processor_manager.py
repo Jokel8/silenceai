@@ -16,7 +16,8 @@ class ProcessorManager:
         from preprocessing.background_removal_processor import BackgroundRemovalProcessor
         from preprocessing.contour_drawer_processor import ContourDrawerProcessor
         from preprocessing.segmentation_processor import SegmentationProcessor
-        from preprocessing.keypoint_extraction_processor import HandDetectionProcessor
+        from preprocessing.hand_detection_processor import HandsDetectionProcessor
+        from preprocessing.face_detection_processor import FaceDetectionProcessor
         from preprocessing.pose_detection_processor import PoseDetectionProcessor
         from .. import consoleInterface
         self.console = consoleInterface
@@ -35,7 +36,8 @@ class ProcessorManager:
             overlay_alpha=0.22
         )
         self.segmentation_proc = SegmentationProcessor(threshold=0.4)
-        self.hand_proc = HandDetectionProcessor(confidence=0.5)
+        self.hand_proc = HandsDetectionProcessor(confidence=0.5)
+        self.face_proc = FaceDetectionProcessor(confidence=0.5)
         self.pose_proc = PoseDetectionProcessor(confidence=0.5)
     
     def get_brightness_processor(self):
@@ -61,6 +63,9 @@ class ProcessorManager:
     
     def get_hand_processor(self):
         return self.hand_proc
+    
+    def get_face_processor(self):
+        return self.face_proc
     
     def get_pose_processor(self):
         return self.pose_proc

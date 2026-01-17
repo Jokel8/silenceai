@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 import os
 
-from preprocessing.keypoint_normalization_processor import KeypointsNormalizeProcessor
+from SilenceAI.preprocessing.keypoint_normalization_processor import HandsNormalizeProcessor
 
 
 class HandKeypointsNormalizer:
@@ -13,7 +13,7 @@ class HandKeypointsNormalizer:
     """
     
     def __init__(self):
-        self.processor = KeypointsNormalizeProcessor()
+        self.processor = HandsNormalizeProcessor()
     
     def relative_to_wrist_normalize(self, points_dict):
         """Normalize keypoints relative to wrist position"""

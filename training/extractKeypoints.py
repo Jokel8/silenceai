@@ -14,7 +14,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from preprocessing.keypoint_extraction_processor import HandDetectionProcessor
+from SilenceAI.preprocessing.hand_detection_processor import HandsDetectionProcessor
 
 
 class HandKeypointsExtractor:
@@ -28,7 +28,7 @@ class HandKeypointsExtractor:
         self.image_extensions = {'.jpg', '.png'}
         
         # Use HandDetectionProcessor internally
-        self.processor = HandDetectionProcessor(
+        self.processor = HandsDetectionProcessor(
             confidence=0.5,
             max_hands=2,
             model_path=model_path,

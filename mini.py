@@ -12,7 +12,7 @@ import pyttsx3
 
 from training.extractKeypoints import HandKeypointsExtractor
 from training.normalizKeypoints import HandKeypointsNormalizer
-from preprocessing.keypoint_normalization_processor import KeypointsNormalizeProcessor
+from SilenceAI.preprocessing.keypoint_normalization_processor import HandsNormalizeProcessor
 from coreprocessing.gesture_analyzer import GestureAnalyzer
 from ui.graphics.keypoint_drawer import KeypointDrawerProcessor
 
@@ -20,7 +20,7 @@ speech_lock = threading.Lock()
 
 handKeypointExtractor = HandKeypointsExtractor()
 handKeypointsNormalizer = HandKeypointsNormalizer()
-keypointNormalizer = KeypointsNormalizeProcessor()
+keypointNormalizer = HandsNormalizeProcessor()
 gestureAnalyzer = GestureAnalyzer()
 keypointDrawer = KeypointDrawerProcessor(keypoint_size=5, line_thickness=2, color=(255, 255, 0))
 

@@ -228,7 +228,7 @@ class PreprocessingDropdown:
     def create(callback):
         dropdown_width = min(Window.width * 0.25, 350)
         item_height = max(40, Window.height * 0.05)
-        num_items = 8  # Header + 7 features
+        num_items = 8  # Header + 7 features (Pose Detection replaces 4 individual features)
         popup_height = min(num_items * item_height + (num_items - 1) * 10 + 30, Window.height * 0.8)
         
         container = StyledContainer(
@@ -272,13 +272,12 @@ class PreprocessingDropdown:
         
         # Features
         features = [
-            ('Segmentation', 'segmentation', True),
+            ('Pose Detection', 'pose', True),  # Controls: segmentation, hands, pose, contour
             ('Hand Detection', 'hands', True),
-            ('Pose Detection', 'pose', True),
+            ('Face Detection', 'face', True),
             ('CLAHE Enhancement', 'clahe', True),
             ('Brightness Adjust', 'brightness', True),
-            ('Smart Crop', 'crop', True),
-            ('Contour Drawing', 'contour', True),
+            ('Smart Crop', 'crop', False),
         ]
         
         for display_name, feature_id, initial_state in features:

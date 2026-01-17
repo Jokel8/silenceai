@@ -12,7 +12,7 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.core import base_options
 
 
-class HandDetectionProcessor:
+class HandsDetectionProcessor:
     """Handles hand detection using MediaPipe Tasks API"""
 
     def __init__(

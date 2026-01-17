@@ -86,20 +86,21 @@ class UI(Widget):
         feature_id = instance.feature_id
         
         # Toggle corresponding feature in StreamProcessor
-        if feature_id == 'segmentation':
+        if feature_id == 'pose':
+            # Pose detection controls: segmentation, hands, pose, contour
             self.stream_proc.toggle_segmentation(is_enabled)
+            self.stream_proc.toggle_pose(is_enabled)
+            self.stream_proc.toggle_contour(is_enabled)
         elif feature_id == 'hands':
             self.stream_proc.toggle_hands(is_enabled)
-        elif feature_id == 'pose':
-            self.stream_proc.toggle_pose(is_enabled)
+        elif feature_id == 'face':
+            self.stream_proc.toggle_face(is_enabled)
         elif feature_id == 'clahe':
             self.stream_proc.toggle_clahe(is_enabled)
         elif feature_id == 'brightness':
             self.stream_proc.toggle_brightness(is_enabled)
         elif feature_id == 'crop':
             self.stream_proc.toggle_crop(is_enabled)
-        elif feature_id == 'contour':
-            self.stream_proc.toggle_contour(is_enabled)
 
     # ------------------- Model Selection Dropdown -------------------
     

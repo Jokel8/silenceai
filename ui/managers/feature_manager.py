@@ -13,10 +13,11 @@ class FeatureManager:
         # Feature toggles
         self.use_segmentation = True
         self.use_hands = True
+        self.use_face = True
         self.use_pose = True
         self.use_clahe = True
         self.use_brightness = True
-        self.use_crop = True
+        self.use_crop = False
         self.use_contour = True
     
     def toggle_segmentation(self, enabled):
@@ -26,6 +27,10 @@ class FeatureManager:
     def toggle_hands(self, enabled):
         self.use_hands = enabled
         self.console.print_status(f"Hand Detection: {'ON' if enabled else 'OFF'}")
+    
+    def toggle_face(self, enabled):
+        self.use_face = enabled
+        self.console.print_status(f"Face Detection (Lips & Pose): {'ON' if enabled else 'OFF'}")
     
     def toggle_pose(self, enabled):
         self.use_pose = enabled
