@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SilenceAI - Barrierefreie Kommunikation</title>
+    <meta name="description"
+        content="SilenceAI ermöglicht barrierefreie Kommunikation für taubstumme Personen durch fortschrittliche KI-Systeme." />
+    <link rel="stylesheet" href="style/main.css" />
+    <link rel="stylesheet" href="style/silenceai.css" />
+    <script src="background.js" defer></script>
+</head>
+
+<body class="silence-page">
+    <canvas id="nnCanvas"></canvas>
+
+    <!-- SVG Filter for Liquid Glass Distortion -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <filter id="glass-distortion" x="0%" y="0%" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008 0.008" numOctaves="2" seed="92" result="noise" />
+                <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
+                <feDisplacementMap in="SourceGraphic" in2="blurred" scale="150" xChannelSelector="R"
+                    yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="silence-container">
+        <!-- Linke Seite: Logo -->
+        <div class="silence-left">
+            <img src="img/sai_logo.png" alt="SilenceAI Logo" class="silence-logo" id="logoElement" />
+        </div>
+
+        <!-- Rechte Seite: Scrollbare Boxen -->
+        <div class="silence-right">
+            <div class="content-box">
+                <h2>Was ist SilenceAI?</h2>
+                <p>SilenceAI ist ein innovatives Projekt, das Gebärdensprache in Echtzeit in gesprochene Sprache
+                    übersetzt. Wir kombinieren fortschrittliche KI-Systeme, um barrierefreie Kommunikation zu
+                    ermöglichen.</p>
+            </div>
+
+            <div class="content-box">
+                <h2>Die 5 KI-Systeme</h2>
+                <ul>
+                    <li><strong>Preprocessing:</strong> Videoaufbereitung und Normalisierung</li>
+                    <li><strong>Keypoint-Erkennung:</strong> Identifikation von Körperpunkten</li>
+                    <li><strong>Gestenerkennung:</strong> Klassifikation von Gebärden (Kernmodul)</li>
+                    <li><strong>Postprocessing:</strong> Verfeinern und Kontextoptimierung</li>
+                    <li><strong>Sprachsynthese:</strong> Konvertierung zu gesprochener Sprache</li>
+                </ul>
+            </div>
+
+            <div class="content-box">
+                <h2>Unser neuronales Netz</h2>
+                <p>Unser selbsttrainiertes neuronales Netz mit 4 Schichten erreicht derzeit 21% Genauigkeit auf
+                    Trainingsdatensätzen. Durch optimiertes Training streben wir zeitnah deutlich bessere Ergebnisse an.
+                </p>
+            </div>
+
+            <div class="content-box">
+                <h2>Mobile App</h2>
+                <p>Wir entwickeln derzeit eine Mobile App, die es Nutzern ermöglicht, direkt über das Smartphone
+                    Gebärdensprache zu übersetzen - jederzeit und überall.</p>
+            </div>
+
+            <div class="content-box">
+                <h2>Unser Ziel</h2>
+                <p>Wir möchten Kommunikationsbarrieren abbauen und jedem Menschen - unabhängig von ihrer Fähigkeit zu
+                    hören oder zu sprechen - volle Teilhabe an Gesprächen ermöglichen.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('nnCanvas').style.background = 'transparent';
+    </script>
+
+    <?php
+    //Aufruf erfassen
+    try {
+        $url = "https://jonas.fam-klupsch.de/jkservices.php?sitename=silenceai";
+        $response = file_get_contents($url);
+    } catch (Exception $e) {
+    }
+    ?>
+</body>
+
+</html>
